@@ -49,7 +49,7 @@ export default function ScheduleManager() {
       setSchedule
     )
 
-  const { addConstraint, removeConstraint } = useConstraintManagement(
+  const { setConstraint, removeConstraint } = useConstraintManagement(
     constraints,
     setConstraints
   )
@@ -120,7 +120,7 @@ export default function ScheduleManager() {
               selectedEmployee={selectedEmployee}
               employees={employees}
               constraints={constraints}
-              onAddConstraint={addConstraint}
+              onSetConstraint={setConstraint}
               onRemoveConstraint={removeConstraint}
             />
           </div>

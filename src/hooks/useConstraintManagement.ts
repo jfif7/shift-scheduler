@@ -4,24 +4,6 @@ export const useConstraintManagement = (
   constraints: Constraint[],
   setConstraints: (constraints: Constraint[]) => void
 ) => {
-  const addConstraint = (
-    employeeId: string,
-    type: "avoid" | "prefer",
-    date: number
-  ) => {
-    const newConstraint: Constraint = {
-      id: Date.now().toString(),
-      employeeId,
-      type,
-      date,
-    }
-    setConstraints([...constraints, newConstraint])
-  }
-
-  const removeConstraint = (id: string) => {
-    setConstraints(constraints.filter((constraint) => constraint.id !== id))
-  }
-
   const getConstraintsForEmployee = (employeeId: string) => {
     return constraints.filter(
       (constraint) => constraint.employeeId === employeeId
@@ -35,10 +17,41 @@ export const useConstraintManagement = (
     )
   }
 
+  const removeConstraint = (employeeId: string, date: number) => {
+    setConstraints(
+      constraints.filter(
+        (constraint) =>
+          !(constraint.employeeId === employeeId && constraint.date === date)
+      )
+    )
+  }
+
+  const setConstraint = (
+    employeeId: string,
+    type: "avoid" | "prefer",
+    date: number
+  ) => {
+    // First remove any existing constraint for this employee and date
+    const updatedConstraints = constraints.filter(
+      (constraint) =>
+        !(constraint.employeeId === employeeId && constraint.date === date)
+    )
+
+    // Then add the new constraint
+    const newConstraint: Constraint = {
+      id: Date.now().toString(),
+      employeeId,
+      type,
+      date,
+    }
+
+    setConstraints([...updatedConstraints, newConstraint])
+  }
+
   return {
-    addConstraint,
-    removeConstraint,
     getConstraintsForEmployee,
     getConstraintForDate,
+    removeConstraint,
+    setConstraint,
   }
 }

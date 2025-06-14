@@ -12,12 +12,12 @@ interface CalendarViewProps {
   selectedEmployee: string
   employees: Employee[]
   constraints: Constraint[]
-  onAddConstraint: (
+  onSetConstraint: (
     employeeId: string,
     type: "avoid" | "prefer",
     date: number
   ) => void
-  onRemoveConstraint: (id: string) => void
+  onRemoveConstraint: (employeeId: string, date: number) => void
 }
 
 export const CalendarView = ({
@@ -26,7 +26,7 @@ export const CalendarView = ({
   selectedEmployee,
   employees,
   constraints,
-  onAddConstraint,
+  onSetConstraint,
   onRemoveConstraint,
 }: CalendarViewProps) => {
   const handleDayClick = (day: number) => {
@@ -40,14 +40,13 @@ export const CalendarView = ({
     // 3-state cycle: normal → prefer → avoid → normal
     if (!existingConstraint) {
       // Currently normal → change to prefer
-      onAddConstraint(selectedEmployee, "prefer", day)
+      onSetConstraint(selectedEmployee, "prefer", day)
     } else if (existingConstraint.type === "prefer") {
       // Currently prefer → change to avoid
-      onRemoveConstraint(existingConstraint.id)
-      onAddConstraint(selectedEmployee, "avoid", day)
+      onSetConstraint(selectedEmployee, "avoid", day)
     } else if (existingConstraint.type === "avoid") {
       // Currently avoid → change to normal (remove constraint)
-      onRemoveConstraint(existingConstraint.id)
+      onRemoveConstraint(selectedEmployee, day)
     }
   }
 
