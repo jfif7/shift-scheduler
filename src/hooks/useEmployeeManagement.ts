@@ -1,5 +1,5 @@
 import { Employee, Constraint, Schedule } from "@/types/schedule"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 export const useEmployeeManagement = (
   employees: Employee[],
@@ -9,8 +9,6 @@ export const useEmployeeManagement = (
   schedule: Schedule,
   setSchedule: (schedule: Schedule) => void
 ) => {
-  const { toast } = useToast()
-
   const addEmployee = () => {
     const existingNumbers = employees
       .filter((emp) => emp.name.startsWith("New Employee "))
@@ -31,8 +29,7 @@ export const useEmployeeManagement = (
     }
 
     setEmployees([...employees, newEmployee])
-    toast({
-      title: "Employee added",
+    toast.success("Employee added", {
       description: `${newEmployee.name} has been added to the schedule.`,
     })
   }
@@ -56,8 +53,7 @@ export const useEmployeeManagement = (
     setEmployees(
       employees.map((emp) => (emp.id === id ? { ...emp, ...updates } : emp))
     )
-    toast({
-      title: "Employee updated",
+    toast.success("Employee updated", {
       description: "Employee information has been saved.",
     })
   }

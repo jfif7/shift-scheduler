@@ -6,11 +6,10 @@ import {
   ScheduleSettings,
 } from "@/types/schedule"
 import { generateSchedule } from "@/utils/scheduleUtils"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 export const useScheduleGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false)
-  const { toast } = useToast()
 
   const handleGenerateSchedule = async (
     employees: Employee[],
@@ -36,23 +35,18 @@ export const useScheduleGeneration = () => {
 
       if (result.success) {
         setSchedule(result.schedule)
-        toast({
-          title: "Schedule generated",
+        toast.success("Schedule generated", {
           description: result.message,
         })
       } else {
-        toast({
-          title: "Generation failed",
+        toast.error("Generation failed", {
           description: result.message,
-          variant: "destructive",
         })
       }
     } catch {
-      toast({
-        title: "Generation error",
+      toast.error("Generation error", {
         description:
           "An unexpected error occurred while generating the schedule.",
-        variant: "destructive",
       })
     } finally {
       setIsGenerating(false)

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { FileSpreadsheet, FileImage } from "lucide-react"
 import { Employee, Schedule } from "@/types/schedule"
 import { exportScheduleAsCSV, exportScheduleAsImage } from "@/utils/exportUtils"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 interface ScheduleActionsProps {
   schedule: Schedule
@@ -22,54 +22,42 @@ export const ScheduleActions = ({
   onGenerateSchedule,
   isGenerating = false,
 }: ScheduleActionsProps) => {
-  const { toast } = useToast()
-
   const handleExportCSV = () => {
     if (Object.keys(schedule).length === 0) {
-      toast({
-        title: "No schedule",
+      toast.error("No schedule", {
         description: "Please generate a schedule first.",
-        variant: "destructive",
       })
       return
     }
 
     try {
       exportScheduleAsCSV(schedule, employees, selectedMonth, selectedYear)
-      toast({
-        title: "CSV exported",
+      toast.success("CSV exported", {
         description: "Schedule has been exported as CSV file.",
       })
     } catch {
-      toast({
-        title: "Export failed",
+      toast.error("Export failed", {
         description: "Failed to export CSV file.",
-        variant: "destructive",
       })
     }
   }
 
   const handleExportImage = () => {
     if (Object.keys(schedule).length === 0) {
-      toast({
-        title: "No schedule",
+      toast.error("No schedule", {
         description: "Please generate a schedule first.",
-        variant: "destructive",
       })
       return
     }
 
     try {
       exportScheduleAsImage(schedule, employees, selectedMonth, selectedYear)
-      toast({
-        title: "Image exported",
+      toast.success("Image exported", {
         description: "Schedule has been exported as PNG image.",
       })
     } catch {
-      toast({
-        title: "Export failed",
+      toast.error("Export failed", {
         description: "Failed to export image file.",
-        variant: "destructive",
       })
     }
   }
