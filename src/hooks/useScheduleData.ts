@@ -83,18 +83,37 @@ export const useScheduleData = () => {
     }
   }
 
-  const addSchedule = (month: string, year: string): string => {
+  const addSchedule = (
+    month: string,
+    year: string,
+    importFromScheduleId?: string
+  ): string => {
     // Check for duplicate
     const exists = schedules.some((s) => s.month === month && s.year === year)
     if (exists) {
       throw new Error(`Schedule for ${month}/${year} already exists`)
     }
 
+    // Get employees to import if specified
+    let employeesToImport: Employee[] = []
+    if (importFromScheduleId) {
+      const sourceSchedule = schedules.find(
+        (s) => s.id === importFromScheduleId
+      )
+      if (sourceSchedule && sourceSchedule.employees.length > 0) {
+        // Create independent copies of employees with new IDs
+        employeesToImport = sourceSchedule.employees.map((employee) => ({
+          ...employee,
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Generate new unique ID
+        }))
+      }
+    }
+
     const newSchedule: ScheduleItem = {
       id: Date.now().toString(),
       month,
       year,
-      employees: [],
+      employees: employeesToImport,
       constraints: [],
       schedule: {},
       createdAt: new Date(),

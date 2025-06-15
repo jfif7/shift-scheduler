@@ -5,7 +5,11 @@ interface MonthSelectorProps {
   schedules: ScheduleItem[]
   activeScheduleId: string | null
   onScheduleSelect: (scheduleId: string) => void
-  onScheduleAdd: (month: string, year: string) => void
+  onScheduleAdd: (
+    month: string,
+    year: string,
+    importFromScheduleId?: string
+  ) => void
   onScheduleDelete: (scheduleId: string) => void
 }
 

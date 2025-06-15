@@ -18,7 +18,11 @@ interface ScheduleHistoryProps {
   schedules: ScheduleItem[]
   activeScheduleId: string | null
   onScheduleSelect: (scheduleId: string) => void
-  onScheduleAdd: (month: string, year: string) => void
+  onScheduleAdd: (
+    month: string,
+    year: string,
+    importFromScheduleId?: string
+  ) => void
   onScheduleDelete: (scheduleId: string) => void
 }
 
@@ -32,10 +36,23 @@ export const ScheduleHistory = ({
   const [isAddingSchedule, setIsAddingSchedule] = useState(false)
   const [newMonth, setNewMonth] = useState("")
   const [newYear, setNewYear] = useState("")
+  const [importFromScheduleId, setImportFromScheduleId] =
+    useState<string>("auto")
 
   const currentDate = new Date()
   const currentMonth = (currentDate.getMonth() + 1).toString()
   const currentYear = currentDate.getFullYear().toString()
+
+  // Get the most recent schedule for auto-import
+  const getMostRecentSchedule = () => {
+    if (schedules.length === 0) return null
+    const sorted = [...schedules].sort((a, b) => {
+      const dateA = new Date(parseInt(a.year), parseInt(a.month) - 1)
+      const dateB = new Date(parseInt(b.year), parseInt(b.month) - 1)
+      return dateB.getTime() - dateA.getTime() // Most recent first
+    })
+    return sorted[0]
+  }
 
   const handleAddSchedule = () => {
     if (!newMonth || !newYear) {
@@ -46,14 +63,29 @@ export const ScheduleHistory = ({
     }
 
     try {
-      onScheduleAdd(newMonth, newYear)
+      // Determine which schedule to import from
+      let importScheduleId: string | undefined
+      if (importFromScheduleId === "auto") {
+        const mostRecent = getMostRecentSchedule()
+        importScheduleId = mostRecent?.id
+      } else if (importFromScheduleId !== "none") {
+        importScheduleId = importFromScheduleId
+      }
+
+      onScheduleAdd(newMonth, newYear, importScheduleId)
       setIsAddingSchedule(false)
       setNewMonth("")
       setNewYear("")
+      setImportFromScheduleId("auto")
+
+      const importMessage = importScheduleId
+        ? " with imported employees"
+        : " with empty employee list"
+
       toast.success("Schedule created", {
         description: `${getMonthName(
           newMonth
-        )} ${newYear} schedule has been created.`,
+        )} ${newYear} schedule has been created${importMessage}.`,
       })
     } catch (error) {
       toast.error("Creation failed", {
@@ -113,6 +145,7 @@ export const ScheduleHistory = ({
               setIsAddingSchedule(true)
               setNewMonth(currentMonth)
               setNewYear(currentYear)
+              setImportFromScheduleId("auto")
             }}
             size="sm"
             className="flex items-center gap-2"
@@ -164,6 +197,39 @@ export const ScheduleHistory = ({
                 </Select>
               </div>
             </div>
+
+            {/* Employee Import Options */}
+            {schedules.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Employee Import</label>
+                <Select
+                  value={importFromScheduleId}
+                  onValueChange={setImportFromScheduleId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose import option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">
+                      Auto-import from most recent schedule
+                    </SelectItem>
+                    <SelectItem value="none">
+                      Start with empty employee list
+                    </SelectItem>
+                    {sortedSchedules.map((schedule) => (
+                      <SelectItem key={schedule.id} value={schedule.id}>
+                        Copy from {getMonthName(schedule.month)} {schedule.year}{" "}
+                        ({schedule.employees.length} employees)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Imported employees become independent copies - changes
+                  won&apos;t affect the original schedule.
+                </p>
+              </div>
+            )}
             <div className="flex gap-2">
               <Button onClick={handleAddSchedule} size="sm">
                 Create Schedule
@@ -174,6 +240,7 @@ export const ScheduleHistory = ({
                   setIsAddingSchedule(false)
                   setNewMonth("")
                   setNewYear("")
+                  setImportFromScheduleId("auto")
                 }}
                 size="sm"
               >

@@ -34,8 +34,14 @@ The Schedule Manager is a comprehensive employee scheduling application that hel
 #### 1.3 Adding New Schedule
 - **Trigger**: User clicks "Add Schedule" button
 - **Process**: Opens month/year selector for new schedule creation, default to current month/year
+- **Employee Import Options**:
+  - **Auto-Import**: By default, if other schedules exist, employees are automatically copied from the most recent schedule
+  - **Manual Selection**: User can choose "Copy employees from" dropdown to select a specific schedule to copy employees from
+  - **Start Fresh**: User can opt out of importing and start with an empty employee list
+  - **Independence**: Imported employees become independent copies - changes won't affect the original schedule
 - **Creation**: New schedule entry added to history list
 - **Auto-Selection**: Newly created schedule becomes the active/selected schedule
+- **Post-Creation**: User can immediately modify the imported employee list as needed
 
 #### 1.4 Month Selection (for Active Schedule)
 - **Action**: User selects the target month and year for the currently active schedule
@@ -46,7 +52,12 @@ The Schedule Manager is a comprehensive employee scheduling application that hel
 
 ### 2. Employee Management Flow
 
-#### 2.1 Adding Employees
+#### 2.1 Employee Data Independence
+- **Schedule Isolation**: Each schedule maintains its own independent copy of employee data
+- **No Cross-Impact**: Changes to employees in one schedule do not affect other schedules
+- **Import Benefits**: New schedules can start with copies of existing employee configurations, reducing setup time
+
+#### 2.2 Adding Employees
 - **Context**: Employee management applies to the currently selected schedule
 - **Trigger**: User clicks "Add Employee" button
 - **Process**: 
