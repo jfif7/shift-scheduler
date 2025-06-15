@@ -18,6 +18,7 @@ interface CalendarViewProps {
     date: number
   ) => void
   onRemoveConstraint: (employeeId: string, date: number) => void
+  hasActiveSchedule: boolean
 }
 
 export const CalendarView = ({
@@ -28,6 +29,7 @@ export const CalendarView = ({
   constraints,
   onSetConstraint,
   onRemoveConstraint,
+  hasActiveSchedule,
 }: CalendarViewProps) => {
   const handleDayClick = (day: number) => {
     if (!selectedEmployee) return
@@ -116,10 +118,24 @@ export const CalendarView = ({
         )}
       </CardHeader>
       <CardContent>
-        {!selectedMonth || !selectedYear ? (
+        {!hasActiveSchedule ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">
+              No active schedule selected. Please select a schedule from the
+              history above to set employee preferences.
+            </p>
+          </div>
+        ) : !selectedMonth || !selectedYear ? (
           <p className="text-muted-foreground">
             Select a month and year to view calendar
           </p>
+        ) : !selectedEmployee ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">
+              Select an employee from the list to set their preferences on the
+              calendar.
+            </p>
+          </div>
         ) : (
           <div className="space-y-2">
             {/* Calendar Header */}

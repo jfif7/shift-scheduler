@@ -27,11 +27,19 @@ export interface ScheduleSettings {
   evenDistribution: boolean
 }
 
-export interface ScheduleData {
+export interface ScheduleItem {
+  id: string
+  month: string
+  year: string
   employees: Employee[]
   constraints: Constraint[]
   schedule: Schedule
-  selectedMonth: string
-  selectedYear: string
+  createdAt: Date
+  isGenerated: boolean
+}
+
+export interface ScheduleData {
+  schedules: ScheduleItem[]
+  activeScheduleId: string | null
   settings: ScheduleSettings
 }

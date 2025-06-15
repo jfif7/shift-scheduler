@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import {
   ScheduleData,
   ScheduleSettings,
+  ScheduleItem,
   Employee,
   Constraint,
   Schedule,
@@ -20,32 +21,23 @@ const DEFAULT_SETTINGS: ScheduleSettings = {
 }
 
 export const useScheduleData = () => {
-  const [selectedMonth, setSelectedMonth] = useState<string>("")
-  const [selectedYear, setSelectedYear] = useState<string>("")
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [constraints, setConstraints] = useState<Constraint[]>([])
-  const [schedule, setSchedule] = useState<Schedule>({})
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([])
+  const [activeScheduleId, setActiveScheduleId] = useState<string | null>(null)
   const [settings, setSettings] = useState<ScheduleSettings>(DEFAULT_SETTINGS)
 
-  // Initialize with current month/year
+  // Initialize with current month/year and load from localStorage
   useEffect(() => {
-    const { month, year } = getCurrentMonthYear()
-    setSelectedMonth(month)
-    setSelectedYear(year)
     loadFromLocalStorage()
   }, [])
 
   const saveToLocalStorage = useCallback(() => {
     const data: ScheduleData = {
-      employees,
-      constraints,
-      schedule,
-      selectedMonth,
-      selectedYear,
+      schedules,
+      activeScheduleId,
       settings,
     }
     localStorage.setItem("scheduleData", JSON.stringify(data))
-  }, [employees, constraints, schedule, selectedMonth, selectedYear, settings])
+  }, [schedules, activeScheduleId, settings])
 
   // Save to localStorage whenever data changes
   useEffect(() => {
@@ -56,25 +48,140 @@ export const useScheduleData = () => {
     const saved = localStorage.getItem("scheduleData")
     if (saved) {
       try {
-        const data = JSON.parse(saved) as ScheduleData
-        setEmployees(
-          (data.employees || []).map((emp: Employee) => ({
-            ...emp,
-            tags: emp.tags || [],
-          }))
-        )
-        setConstraints(data.constraints || [])
-        setSchedule(data.schedule || {})
-        setSettings({ ...DEFAULT_SETTINGS, ...data.settings })
-        if (data.selectedMonth) setSelectedMonth(data.selectedMonth)
-        if (data.selectedYear) setSelectedYear(data.selectedYear)
+        const data = JSON.parse(saved)
+
+        // Handle migration from old single-schedule format
+        if (data.employees && !data.schedules) {
+          const { month, year } = getCurrentMonthYear()
+          const migratedSchedule: ScheduleItem = {
+            id: Date.now().toString(),
+            month: data.selectedMonth || month,
+            year: data.selectedYear || year,
+            employees: data.employees || [],
+            constraints: data.constraints || [],
+            schedule: data.schedule || {},
+            createdAt: new Date(),
+            isGenerated: Object.keys(data.schedule || {}).length > 0,
+          }
+          setSchedules([migratedSchedule])
+          setActiveScheduleId(migratedSchedule.id)
+          setSettings({ ...DEFAULT_SETTINGS, ...data.settings })
+        } else {
+          // New format
+          setSchedules(
+            (data.schedules || []).map((schedule: ScheduleItem) => ({
+              ...schedule,
+              createdAt: new Date(schedule.createdAt),
+            }))
+          )
+          setActiveScheduleId(data.activeScheduleId || null)
+          setSettings({ ...DEFAULT_SETTINGS, ...data.settings })
+        }
       } catch (error) {
         console.error("Error loading from localStorage:", error)
       }
     }
   }
 
+  const addSchedule = (month: string, year: string): string => {
+    // Check for duplicate
+    const exists = schedules.some((s) => s.month === month && s.year === year)
+    if (exists) {
+      throw new Error(`Schedule for ${month}/${year} already exists`)
+    }
+
+    const newSchedule: ScheduleItem = {
+      id: Date.now().toString(),
+      month,
+      year,
+      employees: [],
+      constraints: [],
+      schedule: {},
+      createdAt: new Date(),
+      isGenerated: false,
+    }
+
+    setSchedules((prev) => [...prev, newSchedule])
+    setActiveScheduleId(newSchedule.id)
+    return newSchedule.id
+  }
+
+  const deleteSchedule = (scheduleId: string) => {
+    setSchedules((prev) => prev.filter((s) => s.id !== scheduleId))
+    if (activeScheduleId === scheduleId) {
+      const remaining = schedules.filter((s) => s.id !== scheduleId)
+      setActiveScheduleId(remaining.length > 0 ? remaining[0].id : null)
+    }
+  }
+
+  const updateSchedule = (
+    scheduleId: string,
+    updates: Partial<ScheduleItem>
+  ) => {
+    setSchedules((prev) =>
+      prev.map((schedule) =>
+        schedule.id === scheduleId ? { ...schedule, ...updates } : schedule
+      )
+    )
+  }
+
+  const getActiveSchedule = (): ScheduleItem | null => {
+    return schedules.find((s) => s.id === activeScheduleId) || null
+  }
+
+  // Derived values for active schedule
+  const activeSchedule = getActiveSchedule()
+  const selectedMonth = activeSchedule?.month || ""
+  const selectedYear = activeSchedule?.year || ""
+  const employees = activeSchedule?.employees || []
+  const constraints = activeSchedule?.constraints || []
+  const schedule = activeSchedule?.schedule || {}
+
+  // Setters that update the active schedule
+  const setSelectedMonth = (month: string) => {
+    if (activeScheduleId) {
+      updateSchedule(activeScheduleId, { month })
+    }
+  }
+
+  const setSelectedYear = (year: string) => {
+    if (activeScheduleId) {
+      updateSchedule(activeScheduleId, { year })
+    }
+  }
+
+  const setEmployees = (employees: Employee[]) => {
+    if (activeScheduleId) {
+      updateSchedule(activeScheduleId, { employees })
+    }
+  }
+
+  const setConstraints = (constraints: Constraint[]) => {
+    if (activeScheduleId) {
+      updateSchedule(activeScheduleId, { constraints })
+    }
+  }
+
+  const setSchedule = (schedule: Schedule) => {
+    if (activeScheduleId) {
+      updateSchedule(activeScheduleId, {
+        schedule,
+        isGenerated: Object.keys(schedule).length > 0,
+      })
+    }
+  }
+
   return {
+    // Schedule history management
+    schedules,
+    activeScheduleId,
+    setActiveScheduleId,
+    addSchedule,
+    deleteSchedule,
+    updateSchedule,
+    getActiveSchedule,
+
+    // Active schedule data (for backward compatibility)
     selectedMonth,
     setSelectedMonth,
     selectedYear,
@@ -85,8 +192,12 @@ export const useScheduleData = () => {
     setConstraints,
     schedule,
     setSchedule,
+
+    // Global settings
     settings,
     setSettings,
+
+    // Utilities
     saveToLocalStorage,
     loadFromLocalStorage,
   }

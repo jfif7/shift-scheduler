@@ -12,6 +12,7 @@ interface ScheduleActionsProps {
   selectedYear: string
   onGenerateSchedule: () => void
   isGenerating?: boolean
+  hasActiveSchedule: boolean
 }
 
 export const ScheduleActions = ({
@@ -21,6 +22,7 @@ export const ScheduleActions = ({
   selectedYear,
   onGenerateSchedule,
   isGenerating = false,
+  hasActiveSchedule,
 }: ScheduleActionsProps) => {
   const handleExportCSV = () => {
     if (Object.keys(schedule).length === 0) {
@@ -60,6 +62,22 @@ export const ScheduleActions = ({
         description: "Failed to export image file.",
       })
     }
+  }
+
+  if (!hasActiveSchedule) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Schedule Generation</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Please select or create a schedule in the Setup tab to generate and
+            manage schedules.
+          </p>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (

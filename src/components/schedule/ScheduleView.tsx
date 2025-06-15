@@ -11,6 +11,7 @@ interface ScheduleViewProps {
   employees: Employee[]
   selectedMonth: string
   selectedYear: string
+  hasActiveSchedule: boolean
 }
 
 export const ScheduleView = ({
@@ -18,6 +19,7 @@ export const ScheduleView = ({
   employees,
   selectedMonth,
   selectedYear,
+  hasActiveSchedule,
 }: ScheduleViewProps) => {
   const renderScheduleGrid = () => {
     if (!selectedMonth || !selectedYear) return null
@@ -62,7 +64,12 @@ export const ScheduleView = ({
         <CardTitle>Generated Schedule</CardTitle>
       </CardHeader>
       <CardContent>
-        {Object.keys(schedule).length === 0 ? (
+        {!hasActiveSchedule ? (
+          <p className="text-muted-foreground">
+            No active schedule selected. Please select a schedule from the Setup
+            tab to view its generated schedule.
+          </p>
+        ) : Object.keys(schedule).length === 0 ? (
           <p className="text-muted-foreground">
             No schedule generated yet. Click &quot;Generate Schedule&quot; to
             create one.

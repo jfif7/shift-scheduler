@@ -25,16 +25,24 @@ const PREDEFINED_TAGS = [
 
 export default function ScheduleManager() {
   const {
+    // Schedule history management
+    schedules,
+    activeScheduleId,
+    setActiveScheduleId,
+    addSchedule,
+    deleteSchedule,
+
+    // Active schedule data
     selectedMonth,
-    setSelectedMonth,
     selectedYear,
-    setSelectedYear,
     employees,
     setEmployees,
     constraints,
     setConstraints,
     schedule,
     setSchedule,
+
+    // Global settings
     settings,
     setSettings,
   } = useScheduleData()
@@ -95,34 +103,39 @@ export default function ScheduleManager() {
         </TabsList>
 
         <TabsContent value="setup">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <MonthSelector
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              onMonthChange={setSelectedMonth}
-              onYearChange={setSelectedYear}
-            />
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <MonthSelector
+                schedules={schedules}
+                activeScheduleId={activeScheduleId}
+                onScheduleSelect={setActiveScheduleId}
+                onScheduleAdd={addSchedule}
+                onScheduleDelete={deleteSchedule}
+              />
 
-            <EmployeeManager
-              employees={employees}
-              selectedEmployee={selectedEmployee}
-              onEmployeeSelect={setSelectedEmployee}
-              onAddEmployee={addEmployee}
-              onRemoveEmployee={removeEmployee}
-              onUpdateEmployee={updateEmployee}
-              onToggleTag={toggleEmployeeTag}
-              predefinedTags={PREDEFINED_TAGS}
-            />
+              <EmployeeManager
+                employees={employees}
+                selectedEmployee={selectedEmployee}
+                onEmployeeSelect={setSelectedEmployee}
+                onAddEmployee={addEmployee}
+                onRemoveEmployee={removeEmployee}
+                onUpdateEmployee={updateEmployee}
+                onToggleTag={toggleEmployeeTag}
+                predefinedTags={PREDEFINED_TAGS}
+                hasActiveSchedule={activeScheduleId !== null}
+              />
 
-            <CalendarView
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              selectedEmployee={selectedEmployee}
-              employees={employees}
-              constraints={constraints}
-              onSetConstraint={setConstraint}
-              onRemoveConstraint={removeConstraint}
-            />
+              <CalendarView
+                selectedMonth={selectedMonth}
+                selectedYear={selectedYear}
+                selectedEmployee={selectedEmployee}
+                employees={employees}
+                constraints={constraints}
+                onSetConstraint={setConstraint}
+                onRemoveConstraint={removeConstraint}
+                hasActiveSchedule={activeScheduleId !== null}
+              />
+            </div>
           </div>
         </TabsContent>
 
@@ -144,12 +157,14 @@ export default function ScheduleManager() {
               selectedYear={selectedYear}
               onGenerateSchedule={onGenerateSchedule}
               isGenerating={isGenerating}
+              hasActiveSchedule={activeScheduleId !== null}
             />
             <ScheduleView
               schedule={schedule}
               employees={employees}
               selectedMonth={selectedMonth}
               selectedYear={selectedYear}
+              hasActiveSchedule={activeScheduleId !== null}
             />
           </div>
         </TabsContent>

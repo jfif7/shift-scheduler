@@ -16,6 +16,7 @@ interface EmployeeManagerProps {
   onUpdateEmployee: (id: string, updates: Partial<Employee>) => void
   onToggleTag: (employeeId: string, tag: string) => void
   predefinedTags: string[]
+  hasActiveSchedule: boolean
 }
 
 export const EmployeeManager = ({
@@ -27,6 +28,7 @@ export const EmployeeManager = ({
   onUpdateEmployee,
   onToggleTag,
   predefinedTags,
+  hasActiveSchedule,
 }: EmployeeManagerProps) => {
   const [editingEmployee, setEditingEmployee] = useState<string>("")
   const [editingName, setEditingName] = useState<string>("")
@@ -57,12 +59,20 @@ export const EmployeeManager = ({
       <CardHeader>
         <CardTitle>Manage Employees</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Click an employee to select and edit, then click calendar days to set
-          preferences
+          {hasActiveSchedule
+            ? "Click an employee to select and edit, then click calendar days to set preferences"
+            : "Select a schedule from the history above to manage employees"}
         </p>
       </CardHeader>
       <CardContent>
-        {employees.length === 0 ? (
+        {!hasActiveSchedule ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">
+              No active schedule selected. Please select a schedule from the
+              history above or create a new one.
+            </p>
+          </div>
+        ) : employees.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-4">
               No employees added yet.
@@ -209,14 +219,16 @@ export const EmployeeManager = ({
               </div>
             ))}
 
-            <Button
-              onClick={onAddEmployee}
-              variant="outline"
-              className="w-full"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Employee
-            </Button>
+            {hasActiveSchedule && (
+              <Button
+                onClick={onAddEmployee}
+                variant="outline"
+                className="w-full"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Employee
+              </Button>
+            )}
           </div>
         )}
       </CardContent>
