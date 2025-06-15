@@ -54,6 +54,31 @@ export const ScheduleHistory = ({
     return sorted[0]
   }
 
+  // Get the next month/year after the latest schedule, or current month/year if no schedules
+  const getNextMonthYear = () => {
+    const mostRecent = getMostRecentSchedule()
+    if (!mostRecent) {
+      return {
+        month: currentMonth,
+        year: currentYear,
+      }
+    }
+
+    const recentDate = new Date(
+      parseInt(mostRecent.year),
+      parseInt(mostRecent.month) - 1
+    )
+    const nextMonth = new Date(
+      recentDate.getFullYear(),
+      recentDate.getMonth() + 1
+    )
+
+    return {
+      month: (nextMonth.getMonth() + 1).toString(),
+      year: nextMonth.getFullYear().toString(),
+    }
+  }
+
   const handleAddSchedule = () => {
     if (!newMonth || !newYear) {
       toast.error("Invalid input", {
@@ -142,9 +167,10 @@ export const ScheduleHistory = ({
           </CardTitle>
           <Button
             onClick={() => {
+              const { month, year } = getNextMonthYear()
               setIsAddingSchedule(true)
-              setNewMonth(currentMonth)
-              setNewYear(currentYear)
+              setNewMonth(month)
+              setNewYear(year)
               setImportFromScheduleId("auto")
             }}
             size="sm"

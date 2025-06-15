@@ -33,7 +33,7 @@ The Schedule Manager is a comprehensive employee scheduling application that hel
 
 #### 1.3 Adding New Schedule
 - **Trigger**: User clicks "Add Schedule" button
-- **Process**: Opens month/year selector for new schedule creation, default to current month/year
+- **Process**: Opens month/year selector for new schedule creation, default to the next month/year of the latest schedule
 - **Employee Import Options**:
   - **Auto-Import**: By default, if other schedules exist, employees are automatically copied from the most recent schedule
   - **Manual Selection**: User can choose "Copy employees from" dropdown to select a specific schedule to copy employees from
