@@ -19,8 +19,8 @@ interface ScheduleHistoryProps {
   activeScheduleId: string | null
   onScheduleSelect: (scheduleId: string) => void
   onScheduleAdd: (
-    month: string,
-    year: string,
+    month: number,
+    year: number,
     importFromScheduleId?: string
   ) => void
   onScheduleDelete: (scheduleId: string) => void
@@ -34,21 +34,21 @@ export const ScheduleHistory = ({
   onScheduleDelete,
 }: ScheduleHistoryProps) => {
   const [isAddingSchedule, setIsAddingSchedule] = useState(false)
-  const [newMonth, setNewMonth] = useState("")
-  const [newYear, setNewYear] = useState("")
+  const [newMonth, setNewMonth] = useState<number | null>(null)
+  const [newYear, setNewYear] = useState<number | null>(null)
   const [importFromScheduleId, setImportFromScheduleId] =
     useState<string>("auto")
 
   const currentDate = new Date()
-  const currentMonth = (currentDate.getMonth() + 1).toString()
-  const currentYear = currentDate.getFullYear().toString()
+  const currentMonth = currentDate.getMonth() + 1
+  const currentYear = currentDate.getFullYear()
 
   // Get the most recent schedule for auto-import
   const getMostRecentSchedule = () => {
     if (schedules.length === 0) return null
     const sorted = [...schedules].sort((a, b) => {
-      const dateA = new Date(parseInt(a.year), parseInt(a.month) - 1)
-      const dateB = new Date(parseInt(b.year), parseInt(b.month) - 1)
+      const dateA = new Date(a.year, a.month - 1)
+      const dateB = new Date(b.year, b.month - 1)
       return dateB.getTime() - dateA.getTime() // Most recent first
     })
     return sorted[0]
@@ -64,18 +64,15 @@ export const ScheduleHistory = ({
       }
     }
 
-    const recentDate = new Date(
-      parseInt(mostRecent.year),
-      parseInt(mostRecent.month) - 1
-    )
+    const recentDate = new Date(mostRecent.year, mostRecent.month - 1)
     const nextMonth = new Date(
       recentDate.getFullYear(),
       recentDate.getMonth() + 1
     )
 
     return {
-      month: (nextMonth.getMonth() + 1).toString(),
-      year: nextMonth.getFullYear().toString(),
+      month: nextMonth.getMonth() + 1,
+      year: nextMonth.getFullYear(),
     }
   }
 
@@ -99,8 +96,8 @@ export const ScheduleHistory = ({
 
       onScheduleAdd(newMonth, newYear, importScheduleId)
       setIsAddingSchedule(false)
-      setNewMonth("")
-      setNewYear("")
+      setNewMonth(null)
+      setNewYear(null)
       setImportFromScheduleId("auto")
 
       const importMessage = importScheduleId
@@ -122,8 +119,8 @@ export const ScheduleHistory = ({
 
   const handleDeleteSchedule = (
     scheduleId: string,
-    month: string,
-    year: string
+    month: number,
+    year: number
   ) => {
     onScheduleDelete(scheduleId)
     toast.success("Schedule deleted", {
@@ -132,8 +129,8 @@ export const ScheduleHistory = ({
   }
 
   const sortedSchedules = [...schedules].sort((a, b) => {
-    const dateA = new Date(parseInt(a.year), parseInt(a.month) - 1)
-    const dateB = new Date(parseInt(b.year), parseInt(b.month) - 1)
+    const dateA = new Date(a.year, a.month - 1)
+    const dateB = new Date(b.year, b.month - 1)
     return dateA.getTime() - dateB.getTime()
   })
 
@@ -194,7 +191,10 @@ export const ScheduleHistory = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium">Month</label>
-                <Select value={newMonth} onValueChange={setNewMonth}>
+                <Select
+                  value={newMonth?.toString() || ""}
+                  onValueChange={(value) => setNewMonth(parseInt(value))}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select month" />
                   </SelectTrigger>
@@ -209,7 +209,10 @@ export const ScheduleHistory = ({
               </div>
               <div>
                 <label className="text-sm font-medium">Year</label>
-                <Select value={newYear} onValueChange={setNewYear}>
+                <Select
+                  value={newYear?.toString() || ""}
+                  onValueChange={(value) => setNewYear(parseInt(value))}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select year" />
                   </SelectTrigger>
@@ -264,8 +267,8 @@ export const ScheduleHistory = ({
                 variant="outline"
                 onClick={() => {
                   setIsAddingSchedule(false)
-                  setNewMonth("")
-                  setNewYear("")
+                  setNewMonth(null)
+                  setNewYear(null)
                   setImportFromScheduleId("auto")
                 }}
                 size="sm"

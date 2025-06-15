@@ -10,8 +10,8 @@ export const generateSchedule = (
   employees: Employee[],
   constraints: Constraint[],
   settings: ScheduleSettings,
-  selectedMonth: string,
-  selectedYear: string
+  selectedMonth: number,
+  selectedYear: number
 ): { schedule: Schedule; success: boolean; message: string } => {
   if (employees.length === 0) {
     return {
@@ -64,11 +64,7 @@ export const generateSchedule = (
 
   // Generate schedule day by day
   for (let day = 1; day <= daysInMonth; day++) {
-    const dayOfWeek = new Date(
-      Number.parseInt(selectedYear),
-      Number.parseInt(selectedMonth) - 1,
-      day
-    ).getDay()
+    const dayOfWeek = new Date(selectedYear, selectedMonth - 1, day).getDay()
     const isWeekendDay = isWeekend(day, selectedMonth, selectedYear)
 
     // Reset weekly counters on Monday (dayOfWeek === 1)

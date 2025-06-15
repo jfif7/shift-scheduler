@@ -7,8 +7,8 @@ import {
 } from "@/utils/dateUtils"
 
 interface CalendarViewProps {
-  selectedMonth: string
-  selectedYear: string
+  selectedMonth: number
+  selectedYear: number
   selectedEmployee: string
   employees: Employee[]
   constraints: Constraint[]

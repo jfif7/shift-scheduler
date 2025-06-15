@@ -6,8 +6,8 @@ interface MonthSelectorProps {
   activeScheduleId: string | null
   onScheduleSelect: (scheduleId: string) => void
   onScheduleAdd: (
-    month: string,
-    year: string,
+    month: number,
+    year: number,
     importFromScheduleId?: string
   ) => void
   onScheduleDelete: (scheduleId: string) => void

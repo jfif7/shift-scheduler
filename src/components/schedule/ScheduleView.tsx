@@ -9,8 +9,8 @@ import {
 interface ScheduleViewProps {
   schedule: Schedule
   employees: Employee[]
-  selectedMonth: string
-  selectedYear: string
+  selectedMonth: number
+  selectedYear: number
   hasActiveSchedule: boolean
 }
 

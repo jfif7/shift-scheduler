@@ -4,8 +4,8 @@ import { getDaysInMonth, getMonthName } from "./dateUtils"
 export const exportScheduleAsCSV = (
   schedule: Schedule,
   employees: Employee[],
-  selectedMonth: string,
-  selectedYear: string
+  selectedMonth: number,
+  selectedYear: number
 ): void => {
   const daysInMonth = getDaysInMonth(selectedMonth, selectedYear)
   let csvContent = "Date,Employee\n"
@@ -15,14 +15,16 @@ export const exportScheduleAsCSV = (
     if (assignedEmployees.length > 0) {
       assignedEmployees.forEach((empId) => {
         const employee = employees.find((emp) => emp.id === empId)
-        csvContent += `${selectedYear}-${selectedMonth.padStart(2, "0")}-${day
+        csvContent += `${selectedYear}-${selectedMonth
           .toString()
-          .padStart(2, "0")},${employee?.name || "Unknown"}\n`
+          .padStart(2, "0")}-${day.toString().padStart(2, "0")},${
+          employee?.name || "Unknown"
+        }\n`
       })
     } else {
-      csvContent += `${selectedYear}-${selectedMonth.padStart(2, "0")}-${day
+      csvContent += `${selectedYear}-${selectedMonth
         .toString()
-        .padStart(2, "0")},No Assignment\n`
+        .padStart(2, "0")}-${day.toString().padStart(2, "0")},No Assignment\n`
     }
   }
 
@@ -38,8 +40,8 @@ export const exportScheduleAsCSV = (
 export const exportScheduleAsImage = (
   schedule: Schedule,
   employees: Employee[],
-  selectedMonth: string,
-  selectedYear: string
+  selectedMonth: number,
+  selectedYear: number
 ): void => {
   const canvas = document.createElement("canvas")
   const ctx = canvas.getContext("2d")

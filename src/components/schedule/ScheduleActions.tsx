@@ -8,8 +8,8 @@ import { toast } from "sonner"
 interface ScheduleActionsProps {
   schedule: Schedule
   employees: Employee[]
-  selectedMonth: string
-  selectedYear: string
+  selectedMonth: number
+  selectedYear: number
   onGenerateSchedule: () => void
   isGenerating?: boolean
   hasActiveSchedule: boolean

@@ -244,7 +244,6 @@ The Schedule Manager is a comprehensive employee scheduling application that hel
   - Global settings (shared across all schedules)
   - Last selected schedule
 - **Error Handling**: Graceful degradation if localStorage is corrupted
-- **Migration**: Handles data format updates for existing single-schedule data
 
 ---
 

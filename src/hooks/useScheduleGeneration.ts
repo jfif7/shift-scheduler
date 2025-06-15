@@ -15,8 +15,8 @@ export const useScheduleGeneration = () => {
     employees: Employee[],
     constraints: Constraint[],
     settings: ScheduleSettings,
-    selectedMonth: string,
-    selectedYear: string,
+    selectedMonth: number,
+    selectedYear: number,
     setSchedule: (schedule: Schedule) => void
   ) => {
     setIsGenerating(true)

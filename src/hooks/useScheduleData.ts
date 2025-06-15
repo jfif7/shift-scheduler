@@ -7,7 +7,6 @@ import {
   Constraint,
   Schedule,
 } from "@/types/schedule"
-import { getCurrentMonthYear } from "@/utils/dateUtils"
 
 const DEFAULT_SETTINGS: ScheduleSettings = {
   shiftsPerDay: 1,
@@ -49,34 +48,14 @@ export const useScheduleData = () => {
     if (saved) {
       try {
         const data = JSON.parse(saved)
-
-        // Handle migration from old single-schedule format
-        if (data.employees && !data.schedules) {
-          const { month, year } = getCurrentMonthYear()
-          const migratedSchedule: ScheduleItem = {
-            id: Date.now().toString(),
-            month: data.selectedMonth || month,
-            year: data.selectedYear || year,
-            employees: data.employees || [],
-            constraints: data.constraints || [],
-            schedule: data.schedule || {},
-            createdAt: new Date(),
-            isGenerated: Object.keys(data.schedule || {}).length > 0,
-          }
-          setSchedules([migratedSchedule])
-          setActiveScheduleId(migratedSchedule.id)
-          setSettings({ ...DEFAULT_SETTINGS, ...data.settings })
-        } else {
-          // New format
-          setSchedules(
-            (data.schedules || []).map((schedule: ScheduleItem) => ({
-              ...schedule,
-              createdAt: new Date(schedule.createdAt),
-            }))
-          )
-          setActiveScheduleId(data.activeScheduleId || null)
-          setSettings({ ...DEFAULT_SETTINGS, ...data.settings })
-        }
+        setSchedules(
+          (data.schedules || []).map((schedule: ScheduleItem) => ({
+            ...schedule,
+            createdAt: new Date(schedule.createdAt),
+          }))
+        )
+        setActiveScheduleId(data.activeScheduleId || null)
+        setSettings({ ...DEFAULT_SETTINGS, ...data.settings })
       } catch (error) {
         console.error("Error loading from localStorage:", error)
       }
@@ -84,8 +63,8 @@ export const useScheduleData = () => {
   }
 
   const addSchedule = (
-    month: string,
-    year: string,
+    month: number,
+    year: number,
     importFromScheduleId?: string
   ): string => {
     // Check for duplicate
@@ -150,20 +129,20 @@ export const useScheduleData = () => {
 
   // Derived values for active schedule
   const activeSchedule = getActiveSchedule()
-  const selectedMonth = activeSchedule?.month || ""
-  const selectedYear = activeSchedule?.year || ""
+  const selectedMonth = activeSchedule?.month || 0
+  const selectedYear = activeSchedule?.year || 0
   const employees = activeSchedule?.employees || []
   const constraints = activeSchedule?.constraints || []
   const schedule = activeSchedule?.schedule || {}
 
   // Setters that update the active schedule
-  const setSelectedMonth = (month: string) => {
+  const setSelectedMonth = (month: number) => {
     if (activeScheduleId) {
       updateSchedule(activeScheduleId, { month })
     }
   }
 
-  const setSelectedYear = (year: string) => {
+  const setSelectedYear = (year: number) => {
     if (activeScheduleId) {
       updateSchedule(activeScheduleId, { year })
     }
