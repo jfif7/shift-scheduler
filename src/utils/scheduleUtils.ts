@@ -64,7 +64,7 @@ export const generateSchedule = (
 
   // Generate schedule day by day
   for (let day = 1; day <= daysInMonth; day++) {
-    const dayOfWeek = new Date(selectedYear, selectedMonth - 1, day).getDay()
+    const dayOfWeek = new Date(selectedYear, selectedMonth, day).getDay()
     const isWeekendDay = isWeekend(day, selectedMonth, selectedYear)
 
     // Reset weekly counters on Monday (dayOfWeek === 1)

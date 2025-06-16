@@ -1,10 +1,10 @@
 export const getDaysInMonth = (month: number, year: number): number => {
-  if (!month || !year) return 0
-  return new Date(year, month, 0).getDate()
+  if (month < 0 || month > 11 || !year) return 0
+  return new Date(year, month + 1, 0).getDate()
 }
 
 export const getMonthName = (month: number): string => {
-  if (!month) return ""
+  if (month < 0 || month > 11) return ""
   const monthNames = [
     "January",
     "February",
@@ -19,11 +19,11 @@ export const getMonthName = (month: number): string => {
     "November",
     "December",
   ]
-  return monthNames[month - 1] || ""
+  return monthNames[month] || ""
 }
 
 export const getFirstDayOfMonth = (month: number, year: number): number => {
-  return new Date(year, month - 1, 1).getDay()
+  return new Date(year, month, 1).getDay()
 }
 
 export const isWeekend = (
@@ -31,14 +31,14 @@ export const isWeekend = (
   month: number,
   year: number
 ): boolean => {
-  const dayOfWeek = new Date(year, month - 1, day).getDay()
+  const dayOfWeek = new Date(year, month, day).getDay()
   return dayOfWeek === 0 || dayOfWeek === 6 // Sunday or Saturday
 }
 
 export const getCurrentMonthYear = () => {
   const now = new Date()
   return {
-    month: now.getMonth() + 1,
+    month: now.getMonth(),
     year: now.getFullYear(),
   }
 }

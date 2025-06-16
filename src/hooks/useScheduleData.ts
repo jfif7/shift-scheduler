@@ -83,7 +83,7 @@ export const useScheduleData = () => {
         // Create independent copies of employees with new IDs
         employeesToImport = sourceSchedule.employees.map((employee) => ({
           ...employee,
-          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Generate new unique ID
+          id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, // Generate new unique ID
         }))
       }
     }
@@ -107,8 +107,7 @@ export const useScheduleData = () => {
   const deleteSchedule = (scheduleId: string) => {
     setSchedules((prev) => prev.filter((s) => s.id !== scheduleId))
     if (activeScheduleId === scheduleId) {
-      const remaining = schedules.filter((s) => s.id !== scheduleId)
-      setActiveScheduleId(remaining.length > 0 ? remaining[0].id : null)
+      setActiveScheduleId(null)
     }
   }
 

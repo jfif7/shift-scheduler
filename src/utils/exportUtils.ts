@@ -15,14 +15,14 @@ export const exportScheduleAsCSV = (
     if (assignedEmployees.length > 0) {
       assignedEmployees.forEach((empId) => {
         const employee = employees.find((emp) => emp.id === empId)
-        csvContent += `${selectedYear}-${selectedMonth
+        csvContent += `${selectedYear}-${(selectedMonth + 1)
           .toString()
           .padStart(2, "0")}-${day.toString().padStart(2, "0")},${
           employee?.name || "Unknown"
         }\n`
       })
     } else {
-      csvContent += `${selectedYear}-${selectedMonth
+      csvContent += `${selectedYear}-${(selectedMonth + 1)
         .toString()
         .padStart(2, "0")}-${day.toString().padStart(2, "0")},No Assignment\n`
     }
