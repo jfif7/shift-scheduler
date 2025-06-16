@@ -72,25 +72,29 @@ export const CalendarView = ({
       )
 
       let cellClass =
-        "p-1 h-8 text-xs border rounded cursor-pointer transition-colors flex items-center justify-center "
+        "p-1 h-8 text-xs border rounded flex items-center justify-center "
 
       if (!selectedEmployee) {
-        cellClass += "border-gray-200 hover:border-gray-300"
-      } else if (existingConstraint?.type === "prefer") {
-        cellClass +=
-          "bg-green-200 border-green-400 text-green-800 hover:bg-green-300"
-      } else if (existingConstraint?.type === "avoid") {
-        cellClass += "bg-red-200 border-red-400 text-red-800 hover:bg-red-300"
+        cellClass += "border-gray-200 bg-gray-50 text-gray-400"
       } else {
-        // Normal state (no constraint)
-        cellClass += "border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+        cellClass += "cursor-pointer transition-colors "
+
+        if (existingConstraint?.type === "prefer") {
+          cellClass +=
+            "bg-green-200 border-green-400 text-green-800 hover:bg-green-300"
+        } else if (existingConstraint?.type === "avoid") {
+          cellClass += "bg-red-200 border-red-400 text-red-800 hover:bg-red-300"
+        } else {
+          // Normal state (no constraint)
+          cellClass += "border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+        }
       }
 
       cells.push(
         <div
           key={day}
           className={cellClass}
-          onClick={() => handleDayClick(day)}
+          onClick={() => selectedEmployee && handleDayClick(day)}
         >
           {day}
         </div>
@@ -129,13 +133,6 @@ export const CalendarView = ({
           <p className="text-muted-foreground">
             Select a month and year to view calendar
           </p>
-        ) : !selectedEmployee ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">
-              Select an employee from the list to set their preferences on the
-              calendar.
-            </p>
-          </div>
         ) : (
           <div className="space-y-2">
             {/* Calendar Header */}
@@ -155,7 +152,7 @@ export const CalendarView = ({
           </div>
         )}
 
-        {selectedEmployee && (
+        {selectedEmployee && hasActiveSchedule && (
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <div className="text-sm font-medium text-blue-800 mb-2">
               Legend:
