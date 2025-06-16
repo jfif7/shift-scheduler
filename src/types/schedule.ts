@@ -29,7 +29,7 @@ export interface ScheduleSettings {
 
 export interface ScheduleItem {
   id: string
-  month: number // 1-12
+  month: number // 0-11
   year: number // 2025
   employees: Employee[]
   constraints: Constraint[]

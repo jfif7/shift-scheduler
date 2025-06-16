@@ -43,16 +43,21 @@ export const ScheduleHistory = ({
   const currentYear = currentDate.getFullYear()
 
   // Get the most recent schedule for auto-import
-  const getMostRecentSchedule = () => {
+  const getMostRecentSchedule = (): ScheduleItem | null => {
     if (schedules.length === 0) return null
-    const sorted = [...schedules].sort((a, b) => {
-      const dateA = new Date(a.year, a.month)
-      const dateB = new Date(b.year, b.month)
-      return dateB.getTime() - dateA.getTime() // Most recent first
-    })
-    return sorted[0]
-  }
 
+    let mostRecent = schedules[0]
+    for (let i = 1; i < schedules.length; i++) {
+      const current = schedules[i]
+      if (
+        current.year > mostRecent.year ||
+        (current.year === mostRecent.year && current.month > mostRecent.month)
+      ) {
+        mostRecent = current
+      }
+    }
+    return mostRecent
+  }
   // Get the next month/year after the latest schedule, or current month/year if no schedules
   const getNextMonthYear = () => {
     const mostRecent = getMostRecentSchedule()
@@ -128,10 +133,8 @@ export const ScheduleHistory = ({
   }
 
   const sortedSchedules = [...schedules].sort((a, b) => {
-    const dateA = new Date(a.year, a.month)
-    const dateB = new Date(b.year, b.month)
     // Most recent first
-    return dateB.getTime() - dateA.getTime()
+    return b.year - a.year || b.month - a.month
   })
 
   const months = [
