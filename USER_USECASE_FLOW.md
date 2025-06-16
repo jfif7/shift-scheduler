@@ -27,7 +27,7 @@ The Schedule Manager is a comprehensive employee scheduling application that hel
 #### 1.2 Schedule History Management
 - **Display**: List of existing schedules shown at the top of Setup tab
 - **Format**: Each schedule entry shows month/year and generation status
-- **Selection**: User can click on any schedule to select it as the current working schedule
+- **Selection**: User can click on any schedule to select it as the current working schedule, clicking an active schedule again will de-select it.
 - **Actions**: Each schedule has options to view, delete, or set as active
 - **Empty State**: If no schedules exist, shows message prompting to create first schedule
 
@@ -42,13 +42,6 @@ The Schedule Manager is a comprehensive employee scheduling application that hel
 - **Creation**: New schedule entry added to history list
 - **Auto-Selection**: Newly created schedule becomes the active/selected schedule
 - **Post-Creation**: User can immediately modify the imported employee list as needed
-
-#### 1.4 Month Selection (for Active Schedule)
-- **Action**: User selects the target month and year for the currently active schedule
-- **Components**: Month/Year dropdown selectors
-- **Validation**: Only valid months/years are selectable
-- **Persistence**: Selection is saved and restored on app reload
-- **Context**: Changes apply only to the currently selected schedule
 
 ### 2. Employee Management Flow
 

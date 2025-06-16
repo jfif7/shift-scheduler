@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import { Plus, Trash2, Calendar, CheckCircle, Circle } from "lucide-react"
 import { ScheduleItem } from "@/types/schedule"
 import { getMonthName } from "@/utils/dateUtils"
@@ -17,7 +16,7 @@ import { toast } from "sonner"
 interface ScheduleHistoryProps {
   schedules: ScheduleItem[]
   activeScheduleId: string | null
-  onScheduleSelect: (scheduleId: string) => void
+  onScheduleSelect: (scheduleId: string | null) => void
   onScheduleAdd: (
     month: number,
     year: number,
@@ -131,7 +130,8 @@ export const ScheduleHistory = ({
   const sortedSchedules = [...schedules].sort((a, b) => {
     const dateA = new Date(a.year, a.month)
     const dateB = new Date(b.year, b.month)
-    return dateA.getTime() - dateB.getTime()
+    // Most recent first
+    return dateB.getTime() - dateA.getTime()
   })
 
   const months = [
@@ -290,7 +290,13 @@ export const ScheduleHistory = ({
                     ? "bg-primary/10 border-primary"
                     : "hover:bg-muted/50"
                 }`}
-                onClick={() => onScheduleSelect(schedule.id)}
+                onClick={() => {
+                  if (schedule.id === activeScheduleId) {
+                    onScheduleSelect(null)
+                  } else {
+                    onScheduleSelect(schedule.id)
+                  }
+                }}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -304,11 +310,6 @@ export const ScheduleHistory = ({
                         {getMonthName(schedule.month)} {schedule.year}
                       </span>
                     </div>
-                    {schedule.id === activeScheduleId && (
-                      <Badge variant="secondary" className="text-xs">
-                        Active
-                      </Badge>
-                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="text-xs text-muted-foreground">

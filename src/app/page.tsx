@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Calendar, Settings } from "lucide-react"
-import { MonthSelector } from "@/components/schedule/MonthSelector"
+import { ScheduleHistory } from "@/components/schedule/ScheduleHistory"
 import { EmployeeManager } from "@/components/schedule/EmployeeManager"
 import { ConstraintsPanel } from "@/components/schedule/ConstraintsPanel"
 import { CalendarView } from "@/components/schedule/CalendarView"
@@ -105,7 +105,7 @@ export default function ScheduleManager() {
         <TabsContent value="setup">
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <MonthSelector
+              <ScheduleHistory
                 schedules={schedules}
                 activeScheduleId={activeScheduleId}
                 onScheduleSelect={setActiveScheduleId}

@@ -134,19 +134,6 @@ export const useScheduleData = () => {
   const constraints = activeSchedule?.constraints || []
   const schedule = activeSchedule?.schedule || {}
 
-  // Setters that update the active schedule
-  const setSelectedMonth = (month: number) => {
-    if (activeScheduleId) {
-      updateSchedule(activeScheduleId, { month })
-    }
-  }
-
-  const setSelectedYear = (year: number) => {
-    if (activeScheduleId) {
-      updateSchedule(activeScheduleId, { year })
-    }
-  }
-
   const setEmployees = (employees: Employee[]) => {
     if (activeScheduleId) {
       updateSchedule(activeScheduleId, { employees })
@@ -178,11 +165,9 @@ export const useScheduleData = () => {
     updateSchedule,
     getActiveSchedule,
 
-    // Active schedule data (for backward compatibility)
+    // Active schedule data
     selectedMonth,
-    setSelectedMonth,
     selectedYear,
-    setSelectedYear,
     employees,
     setEmployees,
     constraints,
@@ -193,9 +178,5 @@ export const useScheduleData = () => {
     // Global settings
     settings,
     setSettings,
-
-    // Utilities
-    saveToLocalStorage,
-    loadFromLocalStorage,
   }
 }
