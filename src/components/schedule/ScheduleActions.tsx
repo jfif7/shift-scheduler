@@ -72,8 +72,8 @@ export const ScheduleActions = ({
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Please select or create a schedule in the Setup tab to generate and
-            manage schedules.
+            Please select or create a schedule above to generate and manage
+            schedules.
           </p>
         </CardContent>
       </Card>
@@ -85,36 +85,36 @@ export const ScheduleActions = ({
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           Schedule Generation
-          <div className="flex gap-2">
-            <Button
-              onClick={onGenerateSchedule}
-              disabled={employees.length === 0 || isGenerating}
-            >
-              {isGenerating ? "Generating..." : "Generate Schedule"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleExportCSV}
-              disabled={Object.keys(schedule).length === 0}
-            >
-              <FileSpreadsheet className="w-4 h-4 mr-2" />
-              Export CSV
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleExportImage}
-              disabled={Object.keys(schedule).length === 0}
-            >
-              <FileImage className="w-4 h-4 mr-2" />
-              Export Image
-            </Button>
-          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
+        <div className="flex flex-col gap-2">
+          <Button
+            onClick={onGenerateSchedule}
+            disabled={employees.length === 0 || isGenerating}
+          >
+            {isGenerating ? "Generating..." : "Generate Schedule"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExportCSV}
+            disabled={Object.keys(schedule).length === 0}
+          >
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExportImage}
+            disabled={Object.keys(schedule).length === 0}
+          >
+            <FileImage className="w-4 h-4 mr-2" />
+            Export Image
+          </Button>
+        </div>
         {employees.length === 0 ? (
           <p className="text-muted-foreground">
-            Add employees in the Setup tab before generating a schedule.
+            Add employees above before generating a schedule.
           </p>
         ) : (
           <div className="space-y-2">

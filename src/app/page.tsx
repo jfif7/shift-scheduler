@@ -6,7 +6,6 @@ import { Calendar, Settings } from "lucide-react"
 import { ScheduleHistory } from "@/components/schedule/ScheduleHistory"
 import { EmployeeManager } from "@/components/schedule/EmployeeManager"
 import { ConstraintsPanel } from "@/components/schedule/ConstraintsPanel"
-import { CalendarView } from "@/components/schedule/CalendarView"
 import { ScheduleView } from "@/components/schedule/ScheduleView"
 import { ScheduleActions } from "@/components/schedule/ScheduleActions"
 import { useScheduleData } from "@/hooks/useScheduleData"
@@ -87,7 +86,7 @@ export default function ScheduleManager() {
       </div>
 
       <Tabs defaultValue="setup" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="setup" className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             Setup
@@ -95,10 +94,6 @@ export default function ScheduleManager() {
           <TabsTrigger value="constraints" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             Constraints
-          </TabsTrigger>
-          <TabsTrigger value="schedule" className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            Schedule
           </TabsTrigger>
         </TabsList>
 
@@ -124,18 +119,28 @@ export default function ScheduleManager() {
                 predefinedTags={PREDEFINED_TAGS}
                 hasActiveSchedule={activeScheduleId !== null}
               />
-
-              <CalendarView
+              <ScheduleActions
+                schedule={schedule}
+                employees={employees}
                 selectedMonth={selectedMonth}
                 selectedYear={selectedYear}
-                selectedEmployee={selectedEmployee}
-                employees={employees}
-                constraints={constraints}
-                onSetConstraint={setConstraint}
-                onRemoveConstraint={removeConstraint}
+                onGenerateSchedule={onGenerateSchedule}
+                isGenerating={isGenerating}
                 hasActiveSchedule={activeScheduleId !== null}
               />
             </div>
+
+            <ScheduleView
+              schedule={schedule}
+              employees={employees}
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              hasActiveSchedule={activeScheduleId !== null}
+              constraints={constraints}
+              selectedEmployee={selectedEmployee}
+              onSetConstraint={setConstraint}
+              onRemoveConstraint={removeConstraint}
+            />
           </div>
         </TabsContent>
 
@@ -144,27 +149,6 @@ export default function ScheduleManager() {
             <ConstraintsPanel
               settings={settings}
               onSettingsChange={setSettings}
-            />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="schedule">
-          <div className="space-y-6">
-            <ScheduleActions
-              schedule={schedule}
-              employees={employees}
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              onGenerateSchedule={onGenerateSchedule}
-              isGenerating={isGenerating}
-              hasActiveSchedule={activeScheduleId !== null}
-            />
-            <ScheduleView
-              schedule={schedule}
-              employees={employees}
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              hasActiveSchedule={activeScheduleId !== null}
             />
           </div>
         </TabsContent>
