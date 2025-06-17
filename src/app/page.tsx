@@ -11,17 +11,19 @@ import { useScheduleData } from "@/hooks/useScheduleData"
 import { useEmployeeManagement } from "@/hooks/useEmployeeManagement"
 import { useConstraintManagement } from "@/hooks/useConstraintManagement"
 import { useScheduleGeneration } from "@/hooks/useScheduleGeneration"
-
-const PREDEFINED_TAGS = [
-  "Weekend type",
-  "Burger",
-  "Morning shift",
-  "Evening shift",
-  "Manager",
-  "Part-time",
-]
+import { useTranslations } from "next-intl"
 
 export default function ScheduleManager() {
+  const t = useTranslations()
+
+  const PREDEFINED_TAGS = [
+    "tags.weekendType",
+    "tags.burger",
+    "tags.morningShift",
+    "tags.eveningShift",
+    "tags.manager",
+    "tags.partTime",
+  ]
   const {
     // Schedule history management
     schedules,
@@ -52,7 +54,8 @@ export default function ScheduleManager() {
       constraints,
       setConstraints,
       schedule,
-      setSchedule
+      setSchedule,
+      t
     )
 
   const { setConstraint, removeConstraint } = useConstraintManagement(
@@ -88,11 +91,11 @@ export default function ScheduleManager() {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="setup" className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            Setup
+            {t("navigation.setup")}
           </TabsTrigger>
           <TabsTrigger value="constraints" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
-            Constraints
+            {t("navigation.constraints")}
           </TabsTrigger>
         </TabsList>
 

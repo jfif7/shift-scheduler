@@ -211,7 +211,10 @@ const calcCost = (
       )
 
       // Track weekend consecutive days for Weekend type employees
-      if (isWeekendDay && employees[empIndex]?.tags.includes("Weekend type")) {
+      if (
+        isWeekendDay &&
+        employees[empIndex]?.tags.includes("tags.weekendType")
+      ) {
         if (day > 0) {
           // Check if yesterday was also weekend and employee worked
           const yesterdayNumber = day
@@ -274,7 +277,7 @@ const calcCost = (
       penalty += excess * CONSECUTIVE_PENALTY
     }
     // Weekend type employees get bonus for consecutive weekend work that can offset consecutive penalties
-    if (emp.tags.includes("Weekend type")) {
+    if (emp.tags.includes("tags.weekendType")) {
       if (employeeWeekendConsecutiveDays[index].max >= 2) {
         penalty = 0
       } else {

@@ -12,6 +12,7 @@ import { Plus, Trash2, Calendar, CheckCircle, Circle } from "lucide-react"
 import { ScheduleItem } from "@/types/schedule"
 import { getMonthName } from "@/utils/dateUtils"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 
 interface ScheduleHistoryProps {
   schedules: ScheduleItem[]
@@ -37,6 +38,7 @@ export const ScheduleHistory = ({
   const [newYear, setNewYear] = useState<number | null>(null)
   const [importFromScheduleId, setImportFromScheduleId] =
     useState<string>("auto")
+  const t = useTranslations()
 
   // Auto-collapse when a schedule is selected
   const shouldShowCollapsed = activeScheduleId && !isAddingSchedule
@@ -85,8 +87,8 @@ export const ScheduleHistory = ({
 
   const handleAddSchedule = () => {
     if (!newMonth || !newYear) {
-      toast.error("Invalid input", {
-        description: "Please select both month and year.",
+      toast.error(t("toast.invalidInput"), {
+        description: t("toast.selectBothMonthYear"),
       })
       return
     }
@@ -108,18 +110,22 @@ export const ScheduleHistory = ({
       setImportFromScheduleId("auto")
 
       const importMessage = importScheduleId
-        ? " with imported employees"
-        : " with empty employee list"
+        ? t("toast.withImportedEmployees")
+        : t("toast.withEmptyEmployeeList")
 
-      toast.success("Schedule created", {
-        description: `${getMonthName(
-          newMonth
-        )} ${newYear} schedule has been created${importMessage}.`,
+      toast.success(t("toast.scheduleCreated"), {
+        description: t("toast.scheduleCreatedDescription", {
+          month: getMonthName(newMonth, t),
+          year: newYear,
+          importMessage,
+        }),
       })
     } catch (error) {
-      toast.error("Creation failed", {
+      toast.error(t("toast.creationFailed"), {
         description:
-          error instanceof Error ? error.message : "Failed to create schedule.",
+          error instanceof Error
+            ? error.message
+            : t("toast.creationFailedDescription"),
       })
     }
   }
@@ -130,8 +136,11 @@ export const ScheduleHistory = ({
     year: number
   ) => {
     onScheduleDelete(scheduleId)
-    toast.success("Schedule deleted", {
-      description: `${getMonthName(month)} ${year} schedule has been deleted.`,
+    toast.success(t("toast.scheduleDeleted"), {
+      description: t("toast.scheduleDeletedDescription", {
+        month: getMonthName(month, t),
+        year,
+      }),
     })
   }
 
@@ -140,20 +149,10 @@ export const ScheduleHistory = ({
     return b.year - a.year || b.month - a.month
   })
 
-  const months = [
-    { value: "0", label: "January" },
-    { value: "1", label: "February" },
-    { value: "2", label: "March" },
-    { value: "3", label: "April" },
-    { value: "4", label: "May" },
-    { value: "5", label: "June" },
-    { value: "6", label: "July" },
-    { value: "7", label: "August" },
-    { value: "8", label: "September" },
-    { value: "9", label: "October" },
-    { value: "10", label: "November" },
-    { value: "11", label: "December" },
-  ]
+  const months = Array.from({ length: 12 }, (_, i) => ({
+    value: i.toString(),
+    label: t(`months.${i}`),
+  }))
 
   const years = Array.from({ length: 10 }, (_, i) => {
     const year = currentDate.getFullYear() - 2 + i
@@ -166,7 +165,7 @@ export const ScheduleHistory = ({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
-            Schedule History
+            {t("scheduleHistory.title")}
             {shouldShowCollapsed && activeScheduleId && (
               <span className="text-sm font-normal text-muted-foreground">
                 -{" "}
@@ -175,7 +174,7 @@ export const ScheduleHistory = ({
                     (s) => s.id === activeScheduleId
                   )
                   return activeSchedule
-                    ? `${getMonthName(activeSchedule.month)} ${
+                    ? `${getMonthName(activeSchedule.month, t)} ${
                         activeSchedule.year
                       }`
                     : ""
@@ -191,7 +190,7 @@ export const ScheduleHistory = ({
                 onClick={() => onScheduleSelect(null)}
                 className="flex items-center gap-2"
               >
-                Show All
+                {t("scheduleHistory.showAll")}
               </Button>
             )}
             <Button
@@ -206,13 +205,13 @@ export const ScheduleHistory = ({
               className="flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              Add Schedule
+              {t("scheduleHistory.addSchedule")}
             </Button>
           </div>
         </div>
         {schedules.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            No schedules created yet.
+            {t("scheduleHistory.noSchedulesYet")}
           </p>
         )}
       </CardHeader>
@@ -221,16 +220,22 @@ export const ScheduleHistory = ({
           {/* Add Schedule Form */}
           {isAddingSchedule && (
             <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
-              <h4 className="font-medium">Create New Schedule</h4>
+              <h4 className="font-medium">
+                {t("scheduleHistory.createNewSchedule")}
+              </h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Month</label>
+                  <label className="text-sm font-medium">
+                    {t("scheduleHistory.month")}
+                  </label>
                   <Select
                     value={newMonth?.toString() || ""}
                     onValueChange={(value) => setNewMonth(parseInt(value))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select month" />
+                      <SelectValue
+                        placeholder={t("scheduleHistory.selectMonth")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {months.map((month) => (
@@ -242,13 +247,17 @@ export const ScheduleHistory = ({
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Year</label>
+                  <label className="text-sm font-medium">
+                    {t("scheduleHistory.year")}
+                  </label>
                   <Select
                     value={newYear?.toString() || ""}
                     onValueChange={(value) => setNewYear(parseInt(value))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select year" />
+                      <SelectValue
+                        placeholder={t("scheduleHistory.selectYear")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {years.map((year) => (
@@ -264,39 +273,43 @@ export const ScheduleHistory = ({
               {/* Employee Import Options */}
               {schedules.length > 0 && (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Employee Import</label>
+                  <label className="text-sm font-medium">
+                    {t("scheduleHistory.employeeImport")}
+                  </label>
                   <Select
                     value={importFromScheduleId}
                     onValueChange={setImportFromScheduleId}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Choose import option" />
+                      <SelectValue
+                        placeholder={t("scheduleHistory.chooseImportOption")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="auto">
-                        Auto-import from most recent schedule
+                        {t("scheduleHistory.autoImportFromRecent")}
                       </SelectItem>
                       <SelectItem value="none">
-                        Start with empty employee list
+                        {t("scheduleHistory.startWithEmptyList")}
                       </SelectItem>
                       {sortedSchedules.map((schedule) => (
                         <SelectItem key={schedule.id} value={schedule.id}>
-                          Copy from {getMonthName(schedule.month)}{" "}
-                          {schedule.year} ({schedule.employees.length}{" "}
-                          employees)
+                          {t("scheduleHistory.copyFrom")}{" "}
+                          {getMonthName(schedule.month, t)} {schedule.year} (
+                          {schedule.employees.length}{" "}
+                          {t("scheduleHistory.employees")})
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    Imported employees become independent copies - changes
-                    won&apos;t affect the original schedule.
+                    {t("scheduleHistory.importNote")}
                   </p>
                 </div>
               )}
               <div className="flex gap-2">
                 <Button onClick={handleAddSchedule} size="sm">
-                  Create Schedule
+                  {t("scheduleHistory.createSchedule")}
                 </Button>
                 <Button
                   variant="outline"
@@ -308,7 +321,7 @@ export const ScheduleHistory = ({
                   }}
                   size="sm"
                 >
-                  Cancel
+                  {t("scheduleHistory.cancel")}
                 </Button>
               </div>
             </div>
@@ -342,13 +355,14 @@ export const ScheduleHistory = ({
                           <Circle className="w-4 h-4 text-muted-foreground" />
                         )}
                         <span className="font-medium">
-                          {getMonthName(schedule.month)} {schedule.year}
+                          {getMonthName(schedule.month, t)} {schedule.year}
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-xs text-muted-foreground">
-                        {schedule.employees.length} employees
+                        {schedule.employees.length}{" "}
+                        {t("scheduleHistory.employees")}
                       </div>
                       <Button
                         variant="ghost"
@@ -368,9 +382,12 @@ export const ScheduleHistory = ({
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    Created: {schedule.createdAt.toLocaleDateString()}
+                    {t("scheduleHistory.created")}{" "}
+                    {schedule.createdAt.toLocaleDateString()}
                     {schedule.isGenerated && (
-                      <span className="ml-2 text-green-600">• Generated</span>
+                      <span className="ml-2 text-green-600">
+                        • {t("scheduleHistory.generated")}
+                      </span>
                     )}
                   </div>
                 </div>

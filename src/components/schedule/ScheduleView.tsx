@@ -5,6 +5,7 @@ import { FileSpreadsheet, FileImage, ChevronDown } from "lucide-react"
 import { exportScheduleAsCSV, exportScheduleAsImage } from "@/utils/exportUtils"
 import { toast } from "sonner"
 import { useState, useEffect, useRef } from "react"
+import { useTranslations } from "next-intl"
 import {
   getDaysInMonth,
   getFirstDayOfMonth,
@@ -44,6 +45,7 @@ export const ScheduleView = ({
 }: ScheduleViewProps) => {
   const [showExportDropdown, setShowExportDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const t = useTranslations()
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -63,20 +65,20 @@ export const ScheduleView = ({
 
   const handleExportCSV = () => {
     if (Object.keys(schedule).length === 0) {
-      toast.error("No schedule", {
-        description: "Please generate a schedule first.",
+      toast.error(t("toast.noSchedule"), {
+        description: t("toast.pleaseGenerateFirst"),
       })
       return
     }
 
     try {
-      exportScheduleAsCSV(schedule, employees, selectedMonth, selectedYear)
-      toast.success("CSV exported", {
-        description: "Schedule has been exported as CSV file.",
+      exportScheduleAsCSV(schedule, employees, selectedMonth, selectedYear, t)
+      toast.success(t("toast.csvExported"), {
+        description: t("toast.csvExportedDescription"),
       })
     } catch {
-      toast.error("Export failed", {
-        description: "Failed to export CSV file.",
+      toast.error(t("toast.exportFailed"), {
+        description: t("toast.csvExportFailedDescription"),
       })
     }
     setShowExportDropdown(false)
@@ -84,20 +86,20 @@ export const ScheduleView = ({
 
   const handleExportImage = () => {
     if (Object.keys(schedule).length === 0) {
-      toast.error("No schedule", {
-        description: "Please generate a schedule first.",
+      toast.error(t("toast.noSchedule"), {
+        description: t("toast.pleaseGenerateFirst"),
       })
       return
     }
 
     try {
-      exportScheduleAsImage(schedule, employees, selectedMonth, selectedYear)
-      toast.success("Image exported", {
-        description: "Schedule has been exported as PNG image.",
+      exportScheduleAsImage(schedule, employees, selectedMonth, selectedYear, t)
+      toast.success(t("toast.imageExported"), {
+        description: t("toast.imageExportedDescription"),
       })
     } catch {
-      toast.error("Export failed", {
-        description: "Failed to export image file.",
+      toast.error(t("toast.exportFailed"), {
+        description: t("toast.imageExportFailedDescription"),
       })
     }
     setShowExportDropdown(false)
@@ -215,7 +217,7 @@ export const ScheduleView = ({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          {"Schedule & Preferences"}
+          {t("schedule.title")}
           <div className="flex gap-2">
             {onGenerateSchedule && (
               <Button
@@ -223,7 +225,9 @@ export const ScheduleView = ({
                 disabled={employees.length === 0 || isGenerating}
                 size="sm"
               >
-                {isGenerating ? "Generating..." : "Generate Schedule"}
+                {isGenerating
+                  ? t("schedule.generating")
+                  : t("schedule.generateButton")}
               </Button>
             )}
             {Object.keys(schedule).length > 0 && (
@@ -234,7 +238,7 @@ export const ScheduleView = ({
                   onClick={() => setShowExportDropdown(!showExportDropdown)}
                   className="flex items-center gap-2"
                 >
-                  Export
+                  {t("schedule.export")}
                   <ChevronDown className="w-4 h-4" />
                 </Button>
                 {showExportDropdown && (
@@ -244,14 +248,14 @@ export const ScheduleView = ({
                       className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
                     >
                       <FileSpreadsheet className="w-4 h-4" />
-                      Export as CSV
+                      {t("schedule.exportCSV")}
                     </button>
                     <button
                       onClick={handleExportImage}
                       className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
                     >
                       <FileImage className="w-4 h-4" />
-                      Export as Image
+                      {t("schedule.exportImage")}
                     </button>
                   </div>
                 )}
@@ -261,7 +265,7 @@ export const ScheduleView = ({
         </CardTitle>
         {selectedEmployee && (
           <p className="text-sm text-muted-foreground">
-            Setting preferences for:{" "}
+            {t("schedule.settingPreferencesFor")}{" "}
             <strong>
               {employees.find((emp) => emp.id === selectedEmployee)?.name}
             </strong>
@@ -271,18 +275,28 @@ export const ScheduleView = ({
       <CardContent>
         {!hasActiveSchedule && (
           <p className="text-muted-foreground">
-            No active schedule selected. Please select a schedule from the
-            schedule history above to view its generated schedule.
+            {t("schedule.noActiveSchedule")}
           </p>
         )}
 
         {hasActiveSchedule && (
           <div>
             <h3 className="font-medium mb-4">
-              {getMonthName(selectedMonth)} {selectedYear} Schedule
+              {t("schedule.monthSchedule", {
+                month: getMonthName(selectedMonth, t),
+                year: selectedYear,
+              })}
             </h3>
             <div className="grid grid-cols-7 gap-2">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              {[
+                t("days.0"),
+                t("days.1"),
+                t("days.2"),
+                t("days.3"),
+                t("days.4"),
+                t("days.5"),
+                t("days.6"),
+              ].map((day) => (
                 <div
                   key={day}
                   className="p-2 text-center font-medium bg-muted rounded"
@@ -296,20 +310,20 @@ export const ScheduleView = ({
             {selectedEmployee && (
               <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                 <div className="text-sm font-medium text-blue-800 mb-2">
-                  Click on days to set preferences:
+                  {t("schedule.clickToSetPreferences")}
                 </div>
                 <div className="space-y-1 text-xs">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
-                    <span>Preferred days (✓)</span>
+                    <span>{t("schedule.preferredDays")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-red-100 border border-red-300 rounded"></div>
-                    <span>Avoid days (✗)</span>
+                    <span>{t("schedule.avoidDays")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-white border border-gray-300 rounded"></div>
-                    <span>Normal days</span>
+                    <span>{t("schedule.normalDays")}</span>
                   </div>
                 </div>
               </div>

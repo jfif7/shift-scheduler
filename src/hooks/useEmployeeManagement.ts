@@ -7,13 +7,15 @@ export const useEmployeeManagement = (
   constraints: Constraint[],
   setConstraints: (constraints: Constraint[]) => void,
   schedule: Schedule,
-  setSchedule: (schedule: Schedule) => void
+  setSchedule: (schedule: Schedule) => void,
+  t?: (key: string, params?: Record<string, string | number>) => string
 ) => {
   const addEmployee = () => {
+    const newEmployeeText = t ? t("employees.newEmployee") : "New Employee"
     const existingNumbers = employees
-      .filter((emp) => emp.name.startsWith("New Employee "))
+      .filter((emp) => emp.name.startsWith(`${newEmployeeText} `))
       .map((emp) => {
-        const match = emp.name.match(/New Employee (\d+)/)
+        const match = emp.name.match(new RegExp(`${newEmployeeText} (\\d+)`))
         return match ? Number.parseInt(match[1]) : 0
       })
 
@@ -23,15 +25,23 @@ export const useEmployeeManagement = (
 
     const newEmployee: Employee = {
       id: Date.now().toString(),
-      name: `New Employee ${paddedNumber}`,
+      name: `${newEmployeeText} ${paddedNumber}`,
       shiftsPerMonth: 8,
       tags: [],
     }
 
     setEmployees([...employees, newEmployee])
-    toast.success("Employee added", {
-      description: `${newEmployee.name} has been added to the schedule.`,
-    })
+    if (t) {
+      toast.success(t("toast.employeeAdded"), {
+        description: t("toast.employeeAddedDescription", {
+          name: newEmployee.name,
+        }),
+      })
+    } else {
+      toast.success("Employee added", {
+        description: `${newEmployee.name} has been added to the schedule.`,
+      })
+    }
   }
 
   const removeEmployee = (id: string) => {
@@ -53,9 +63,15 @@ export const useEmployeeManagement = (
     setEmployees(
       employees.map((emp) => (emp.id === id ? { ...emp, ...updates } : emp))
     )
-    toast.success("Employee updated", {
-      description: "Employee information has been saved.",
-    })
+    if (t) {
+      toast.success(t("toast.employeeUpdated"), {
+        description: t("toast.employeeUpdatedDescription"),
+      })
+    } else {
+      toast.success("Employee updated", {
+        description: "Employee information has been saved.",
+      })
+    }
   }
 
   const toggleEmployeeTag = (employeeId: string, tag: string) => {

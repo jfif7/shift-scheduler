@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { ScheduleSettings } from "@/types/schedule"
+import { useTranslations } from "next-intl"
 
 interface ConstraintsPanelProps {
   settings: ScheduleSettings
@@ -12,6 +13,8 @@ export const ConstraintsPanel = ({
   settings,
   onSettingsChange,
 }: ConstraintsPanelProps) => {
+  const t = useTranslations()
+
   const updateSetting = <K extends keyof ScheduleSettings>(
     key: K,
     value: ScheduleSettings[K]
@@ -22,17 +25,18 @@ export const ConstraintsPanel = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Global Scheduling Constraints</CardTitle>
+        <CardTitle>{t("constraints.title")}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Configure global rules that apply to the entire schedule generation
-          process
+          {t("constraints.description")}
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Basic Shift Configuration */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="shiftsPerDay">Shifts per Day</Label>
+            <Label htmlFor="shiftsPerDay">
+              {t("constraints.shiftsPerDay")}
+            </Label>
             <Input
               id="shiftsPerDay"
               type="number"
@@ -47,12 +51,14 @@ export const ConstraintsPanel = ({
               }
             />
             <p className="text-xs text-muted-foreground">
-              Number of shifts each day (e.g., morning, evening)
+              {t("constraints.shiftsPerDayDescription")}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="personsPerShift">Persons per Shift</Label>
+            <Label htmlFor="personsPerShift">
+              {t("constraints.personsPerShift")}
+            </Label>
             <Input
               id="personsPerShift"
               type="number"
@@ -67,12 +73,14 @@ export const ConstraintsPanel = ({
               }
             />
             <p className="text-xs text-muted-foreground">
-              Number of people needed for each shift
+              {t("constraints.personsPerShiftDescription")}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="maxConsecutive">Max Consecutive Shifts</Label>
+            <Label htmlFor="maxConsecutive">
+              {t("constraints.maxConsecutiveShifts")}
+            </Label>
             <Input
               id="maxConsecutive"
               type="number"
@@ -87,18 +95,20 @@ export const ConstraintsPanel = ({
               }
             />
             <p className="text-xs text-muted-foreground">
-              Maximum shifts an employee can work in a row
+              {t("constraints.maxConsecutiveShiftsDescription")}
             </p>
           </div>
         </div>
 
         {/* Rest and Recovery */}
         <div className="border-t pt-6">
-          <h3 className="text-lg font-medium mb-4">Rest and Recovery</h3>
+          <h3 className="text-lg font-medium mb-4">
+            {t("constraints.restAndRecovery")}
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="minRestDays">
-                Minimum Rest Days Between Shifts
+                {t("constraints.minRestDaysBetweenShifts")}
               </Label>
               <Input
                 id="minRestDays"
@@ -114,7 +124,7 @@ export const ConstraintsPanel = ({
                 }
               />
               <p className="text-xs text-muted-foreground">
-                Minimum days off required between shift assignments
+                {t("constraints.minRestDaysBetweenShiftsDescription")}
               </p>
             </div>
 
@@ -128,10 +138,10 @@ export const ConstraintsPanel = ({
                   }
                   className="rounded"
                 />
-                Weekend Coverage Required
+                {t("constraints.weekendCoverageRequired")}
               </Label>
               <p className="text-xs text-muted-foreground">
-                Ensure shifts are covered on weekends (Saturday & Sunday)
+                {t("constraints.weekendCoverageRequiredDescription")}
               </p>
             </div>
           </div>
@@ -139,10 +149,14 @@ export const ConstraintsPanel = ({
 
         {/* Weekly Limits */}
         <div className="border-t pt-6">
-          <h3 className="text-lg font-medium mb-4">Weekly Limits</h3>
+          <h3 className="text-lg font-medium mb-4">
+            {t("constraints.weeklyLimits")}
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="minShiftsPerWeek">Minimum Shifts per Week</Label>
+              <Label htmlFor="minShiftsPerWeek">
+                {t("constraints.minShiftsPerWeek")}
+              </Label>
               <Input
                 id="minShiftsPerWeek"
                 type="number"
@@ -157,12 +171,14 @@ export const ConstraintsPanel = ({
                 }
               />
               <p className="text-xs text-muted-foreground">
-                Minimum shifts each employee should work per week
+                {t("constraints.minShiftsPerWeekDescription")}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="maxShiftsPerWeek">Maximum Shifts per Week</Label>
+              <Label htmlFor="maxShiftsPerWeek">
+                {t("constraints.maxShiftsPerWeek")}
+              </Label>
               <Input
                 id="maxShiftsPerWeek"
                 type="number"
@@ -177,7 +193,7 @@ export const ConstraintsPanel = ({
                 }
               />
               <p className="text-xs text-muted-foreground">
-                Maximum shifts each employee can work per week
+                {t("constraints.maxShiftsPerWeekDescription")}
               </p>
             </div>
           </div>
@@ -186,7 +202,7 @@ export const ConstraintsPanel = ({
         {/* Fairness and Distribution */}
         <div className="border-t pt-6">
           <h3 className="text-lg font-medium mb-4">
-            Fairness and Distribution
+            {t("constraints.fairnessAndDistribution")}
           </h3>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -199,11 +215,10 @@ export const ConstraintsPanel = ({
                   }
                   className="rounded"
                 />
-                Even Shift Distribution
+                {t("constraints.evenShiftDistribution")}
               </Label>
               <p className="text-xs text-muted-foreground">
-                Attempt to distribute shifts evenly among all employees to
-                ensure fairness
+                {t("constraints.evenShiftDistributionDescription")}
               </p>
             </div>
           </div>
@@ -211,34 +226,45 @@ export const ConstraintsPanel = ({
 
         {/* Summary */}
         <div className="border-t pt-6 bg-muted/50 p-4 rounded-lg">
-          <h3 className="text-lg font-medium mb-2">Constraint Summary</h3>
+          <h3 className="text-lg font-medium mb-2">
+            {t("constraints.constraintSummary")}
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <p>
-                <strong>Daily:</strong> {settings.shiftsPerDay} shift(s),{" "}
-                {settings.personsPerShift} person(s) each
+                <strong>{t("constraints.daily")}:</strong>{" "}
+                {settings.shiftsPerDay} {t("constraints.shifts")},{" "}
+                {settings.personsPerShift} {t("constraints.persons")}{" "}
+                {t("constraints.each")}
               </p>
               <p>
-                <strong>Consecutive:</strong> Max{" "}
-                {settings.maxConsecutiveShifts} shifts in a row
+                <strong>{t("constraints.consecutive")}:</strong>{" "}
+                {t("constraints.max")} {settings.maxConsecutiveShifts}{" "}
+                {t("constraints.inARow")}
               </p>
               <p>
-                <strong>Rest:</strong> {settings.minRestDaysBetweenShifts}{" "}
-                day(s) minimum between shifts
+                <strong>{t("constraints.rest")}:</strong>{" "}
+                {settings.minRestDaysBetweenShifts}{" "}
+                {t("constraints.dayMinimum")}
               </p>
             </div>
             <div>
               <p>
-                <strong>Weekly:</strong> {settings.minShiftsPerWeek}-
-                {settings.maxShiftsPerWeek} shifts per person
+                <strong>{t("constraints.weekly")}:</strong>{" "}
+                {settings.minShiftsPerWeek}-{settings.maxShiftsPerWeek}{" "}
+                {t("constraints.shiftsPerPerson")}
               </p>
               <p>
-                <strong>Weekend:</strong>{" "}
-                {settings.weekendCoverageRequired ? "Required" : "Optional"}
+                <strong>{t("constraints.weekend")}:</strong>{" "}
+                {settings.weekendCoverageRequired
+                  ? t("constraints.required")
+                  : t("constraints.optional")}
               </p>
               <p>
-                <strong>Distribution:</strong>{" "}
-                {settings.evenDistribution ? "Even" : "Flexible"}
+                <strong>{t("constraints.distribution")}:</strong>{" "}
+                {settings.evenDistribution
+                  ? t("constraints.even")
+                  : t("constraints.flexible")}
               </p>
             </div>
           </div>

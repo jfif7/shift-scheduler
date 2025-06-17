@@ -5,7 +5,8 @@ export const exportScheduleAsCSV = (
   schedule: Schedule,
   employees: Employee[],
   selectedMonth: number,
-  selectedYear: number
+  selectedYear: number,
+  t: (key: string) => string
 ): void => {
   const daysInMonth = getDaysInMonth(selectedMonth, selectedYear)
   let csvContent = "Date,Employee\n"
@@ -32,7 +33,7 @@ export const exportScheduleAsCSV = (
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement("a")
   a.href = url
-  a.download = `schedule-${getMonthName(selectedMonth)}-${selectedYear}.csv`
+  a.download = `schedule-${getMonthName(selectedMonth, t)}-${selectedYear}.csv`
   a.click()
   window.URL.revokeObjectURL(url)
 }
@@ -41,7 +42,8 @@ export const exportScheduleAsImage = (
   schedule: Schedule,
   employees: Employee[],
   selectedMonth: number,
-  selectedYear: number
+  selectedYear: number,
+  t: (key: string) => string
 ): void => {
   const canvas = document.createElement("canvas")
   const ctx = canvas.getContext("2d")
@@ -64,7 +66,7 @@ export const exportScheduleAsImage = (
   ctx.font = "bold 24px Arial"
   ctx.textAlign = "center"
   ctx.fillText(
-    `${getMonthName(selectedMonth)} ${selectedYear} Schedule`,
+    `${getMonthName(selectedMonth, t)} ${selectedYear} Schedule`,
     canvas.width / 2,
     30
   )
@@ -102,7 +104,10 @@ export const exportScheduleAsImage = (
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `schedule-${getMonthName(selectedMonth)}-${selectedYear}.png`
+      a.download = `schedule-${getMonthName(
+        selectedMonth,
+        t
+      )}-${selectedYear}.png`
       a.click()
       window.URL.revokeObjectURL(url)
     }

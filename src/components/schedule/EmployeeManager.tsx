@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Trash2 } from "lucide-react"
 import { Employee } from "@/types/schedule"
+import { useTranslations } from "next-intl"
 
 interface EmployeeManagerProps {
   employees: Employee[]
@@ -33,6 +34,7 @@ export const EmployeeManager = ({
   const [editingEmployee, setEditingEmployee] = useState<string>("")
   const [editingName, setEditingName] = useState<string>("")
   const [editingShifts, setEditingShifts] = useState<number>(0)
+  const t = useTranslations()
 
   const startEditingEmployee = (employee: Employee) => {
     setEditingEmployee(employee.id)
@@ -57,29 +59,28 @@ export const EmployeeManager = ({
   return (
     <Card className="flex flex-col h-[600px]">
       <CardHeader className="flex-shrink-0">
-        <CardTitle>Manage Employees</CardTitle>
+        <CardTitle>{t("employees.title")}</CardTitle>
         <p className="text-sm text-muted-foreground">
           {hasActiveSchedule
-            ? "Click an employee to select and edit, then click calendar days to set preferences"
-            : "Select a schedule from the history above to manage employees"}
+            ? t("employees.selectScheduleDescription")
+            : t("employees.noActiveScheduleDescription")}
         </p>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col overflow-hidden">
         {!hasActiveSchedule ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-4">
-              No active schedule selected. Please select a schedule from the
-              history above or create a new one.
+              {t("employees.noActiveScheduleMessage")}
             </p>
           </div>
         ) : employees.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-4">
-              No employees added yet.
+              {t("employees.noEmployeesMessage")}
             </p>
             <Button onClick={onAddEmployee}>
               <Plus className="w-4 h-4 mr-2" />
-              Add First Employee
+              {t("employees.addFirstEmployee")}
             </Button>
           </div>
         ) : (
@@ -99,16 +100,20 @@ export const EmployeeManager = ({
                     <div className="p-4 space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="editName">Name</Label>
+                          <Label htmlFor="editName">
+                            {t("employees.name")}
+                          </Label>
                           <Input
                             id="editName"
                             value={editingName}
                             onChange={(e) => setEditingName(e.target.value)}
-                            placeholder="Employee name"
+                            placeholder={t("employees.namePlaceholder")}
                           />
                         </div>
                         <div>
-                          <Label htmlFor="editShifts">Shifts per Month</Label>
+                          <Label htmlFor="editShifts">
+                            {t("employees.shiftsPerMonth")}
+                          </Label>
                           <Input
                             id="editShifts"
                             type="number"
@@ -125,7 +130,7 @@ export const EmployeeManager = ({
                       </div>
 
                       <div>
-                        <Label>Tags</Label>
+                        <Label>{t("employees.tags")}</Label>
                         <div className="flex flex-wrap gap-2 mt-2">
                           {predefinedTags.map((tag) => {
                             const hasTag = employee.tags.includes(tag)
@@ -136,7 +141,7 @@ export const EmployeeManager = ({
                                 size="sm"
                                 onClick={() => onToggleTag(employee.id, tag)}
                               >
-                                {tag}
+                                {t(tag)}
                               </Button>
                             )
                           })}
@@ -145,14 +150,14 @@ export const EmployeeManager = ({
 
                       <div className="flex gap-2">
                         <Button onClick={saveEmployeeEdits} size="sm">
-                          Save
+                          {t("employees.save")}
                         </Button>
                         <Button
                           onClick={cancelEmployeeEdits}
                           variant="outline"
                           size="sm"
                         >
-                          Cancel
+                          {t("employees.cancel")}
                         </Button>
                         <Button
                           onClick={() => {
@@ -163,7 +168,7 @@ export const EmployeeManager = ({
                           size="sm"
                         >
                           <Trash2 className="w-4 h-4 mr-1" />
-                          Delete
+                          {t("employees.delete")}
                         </Button>
                       </div>
                     </div>
@@ -182,26 +187,25 @@ export const EmployeeManager = ({
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{employee.name}</span>
                             <Badge variant="secondary">
-                              {employee.shiftsPerMonth} shifts
+                              {employee.shiftsPerMonth} {t("employees.shifts")}
                             </Badge>
                           </div>
                           {employee.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
                               {employee.tags.map((tag) => (
                                 <Badge
-                                  key={tag}
+                                  key={t(tag)}
                                   variant="outline"
                                   className="text-xs"
                                 >
-                                  {tag}
+                                  {t(tag)}
                                 </Badge>
                               ))}
                             </div>
                           )}
                           {selectedEmployee === employee.id && (
                             <div className="mt-2 text-xs text-blue-600">
-                              ✓ Selected - Click calendar days to set
-                              preferences
+                              {t("employees.selectedDescription")}
                             </div>
                           )}
                         </div>
@@ -213,7 +217,7 @@ export const EmployeeManager = ({
                             startEditingEmployee(employee)
                           }}
                         >
-                          Edit
+                          {t("employees.edit")}
                         </Button>
                       </div>
                     </div>
@@ -229,7 +233,7 @@ export const EmployeeManager = ({
                 className="w-full mt-3 flex-shrink-0"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Employee
+                {t("employees.addEmployee")}
               </Button>
             )}
           </div>
