@@ -146,18 +146,37 @@ export const ScheduleView = ({
           )
         : null
 
+      // Check if selected employee is scheduled on this day
+      const isSelectedEmployeeScheduled =
+        selectedEmployee && assignedEmployees.includes(selectedEmployee)
+
       let cellClass = "p-2 h-16 border rounded-lg "
 
       // Apply constraint styling if selectedEmployee is set
       if (selectedEmployee) {
         cellClass += "cursor-pointer transition-colors "
 
-        if (existingConstraint?.type === "prefer") {
-          cellClass += "bg-green-100 border-green-300 hover:bg-green-200"
-        } else if (existingConstraint?.type === "avoid") {
-          cellClass += "bg-red-100 border-red-300 hover:bg-red-200"
+        // If selected employee is scheduled, add special highlighting
+        if (isSelectedEmployeeScheduled) {
+          if (existingConstraint?.type === "prefer") {
+            cellClass +=
+              "bg-green-200 border-green-400 hover:bg-green-300 ring-2 ring-blue-400"
+          } else if (existingConstraint?.type === "avoid") {
+            cellClass +=
+              "bg-red-200 border-red-400 hover:bg-red-300 ring-2 ring-blue-400"
+          } else {
+            cellClass +=
+              "bg-blue-100 border-blue-400 hover:bg-blue-200 ring-2 ring-blue-400"
+          }
         } else {
-          cellClass += "hover:border-blue-300 hover:bg-blue-50"
+          // Normal constraint styling when employee is not scheduled
+          if (existingConstraint?.type === "prefer") {
+            cellClass += "bg-green-100 border-green-300 hover:bg-green-200"
+          } else if (existingConstraint?.type === "avoid") {
+            cellClass += "bg-red-100 border-red-300 hover:bg-red-200"
+          } else {
+            cellClass += "hover:border-blue-300 hover:bg-blue-50"
+          }
         }
       }
 
@@ -170,10 +189,15 @@ export const ScheduleView = ({
           <div className="text-sm font-medium">{day}</div>
           {assignedEmployees.map((empId) => {
             const employee = employees.find((emp) => emp.id === empId)
+            const isCurrentSelectedEmployee = selectedEmployee === empId
             return (
               <div
                 key={empId}
-                className="text-xs text-blue-600 truncate"
+                className={`text-xs truncate ${
+                  isCurrentSelectedEmployee
+                    ? "text-blue-800 font-semibold bg-blue-50 rounded border border-blue-200"
+                    : "text-blue-600"
+                }`}
                 title={employee?.name}
               >
                 {employee?.name}
