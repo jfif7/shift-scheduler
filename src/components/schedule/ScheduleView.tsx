@@ -1,5 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Employee, Schedule, Constraint } from "@/types/schedule"
+import { FileSpreadsheet, FileImage, ChevronDown } from "lucide-react"
+import { exportScheduleAsCSV, exportScheduleAsImage } from "@/utils/exportUtils"
+import { toast } from "sonner"
+import { useState, useEffect, useRef } from "react"
 import {
   getDaysInMonth,
   getFirstDayOfMonth,
@@ -20,6 +25,8 @@ interface ScheduleViewProps {
     date: number
   ) => void
   onRemoveConstraint?: (employeeId: string, date: number) => void
+  onGenerateSchedule?: () => void
+  isGenerating?: boolean
 }
 
 export const ScheduleView = ({
@@ -32,7 +39,69 @@ export const ScheduleView = ({
   selectedEmployee,
   onSetConstraint,
   onRemoveConstraint,
+  onGenerateSchedule,
+  isGenerating = false,
 }: ScheduleViewProps) => {
+  const [showExportDropdown, setShowExportDropdown] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowExportDropdown(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
+  const handleExportCSV = () => {
+    if (Object.keys(schedule).length === 0) {
+      toast.error("No schedule", {
+        description: "Please generate a schedule first.",
+      })
+      return
+    }
+
+    try {
+      exportScheduleAsCSV(schedule, employees, selectedMonth, selectedYear)
+      toast.success("CSV exported", {
+        description: "Schedule has been exported as CSV file.",
+      })
+    } catch {
+      toast.error("Export failed", {
+        description: "Failed to export CSV file.",
+      })
+    }
+    setShowExportDropdown(false)
+  }
+
+  const handleExportImage = () => {
+    if (Object.keys(schedule).length === 0) {
+      toast.error("No schedule", {
+        description: "Please generate a schedule first.",
+      })
+      return
+    }
+
+    try {
+      exportScheduleAsImage(schedule, employees, selectedMonth, selectedYear)
+      toast.success("Image exported", {
+        description: "Schedule has been exported as PNG image.",
+      })
+    } catch {
+      toast.error("Export failed", {
+        description: "Failed to export image file.",
+      })
+    }
+    setShowExportDropdown(false)
+  }
   const handleDayClick = (day: number) => {
     if (!selectedEmployee || !onSetConstraint || !onRemoveConstraint) return
 
@@ -121,7 +190,51 @@ export const ScheduleView = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{"Schedule & Preferences"}</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          {"Schedule & Preferences"}
+          <div className="flex gap-2">
+            {onGenerateSchedule && (
+              <Button
+                onClick={onGenerateSchedule}
+                disabled={employees.length === 0 || isGenerating}
+                size="sm"
+              >
+                {isGenerating ? "Generating..." : "Generate Schedule"}
+              </Button>
+            )}
+            {Object.keys(schedule).length > 0 && (
+              <div className="relative" ref={dropdownRef}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowExportDropdown(!showExportDropdown)}
+                  className="flex items-center gap-2"
+                >
+                  Export
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+                {showExportDropdown && (
+                  <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                    <button
+                      onClick={handleExportCSV}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <FileSpreadsheet className="w-4 h-4" />
+                      Export as CSV
+                    </button>
+                    <button
+                      onClick={handleExportImage}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <FileImage className="w-4 h-4" />
+                      Export as Image
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </CardTitle>
         {selectedEmployee && (
           <p className="text-sm text-muted-foreground">
             Setting preferences for:{" "}
