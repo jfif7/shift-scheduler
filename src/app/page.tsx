@@ -98,14 +98,14 @@ export default function ScheduleManager() {
 
         <TabsContent value="setup">
           <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ScheduleHistory
-                schedules={schedules}
-                activeScheduleId={activeScheduleId}
-                onScheduleSelect={setActiveScheduleId}
-                onScheduleAdd={addSchedule}
-                onScheduleDelete={deleteSchedule}
-              />
+            <ScheduleHistory
+              schedules={schedules}
+              activeScheduleId={activeScheduleId}
+              onScheduleSelect={setActiveScheduleId}
+              onScheduleAdd={addSchedule}
+              onScheduleDelete={deleteSchedule}
+            />
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               <EmployeeManager
                 employees={employees}
                 selectedEmployee={selectedEmployee}
@@ -117,20 +117,22 @@ export default function ScheduleManager() {
                 predefinedTags={PREDEFINED_TAGS}
                 hasActiveSchedule={activeScheduleId !== null}
               />
+              <div className="xl:col-span-2">
+                <ScheduleView
+                  schedule={schedule}
+                  employees={employees}
+                  selectedMonth={selectedMonth}
+                  selectedYear={selectedYear}
+                  hasActiveSchedule={activeScheduleId !== null}
+                  constraints={constraints}
+                  selectedEmployee={selectedEmployee}
+                  onSetConstraint={setConstraint}
+                  onRemoveConstraint={removeConstraint}
+                  onGenerateSchedule={onGenerateSchedule}
+                  isGenerating={isGenerating}
+                />
+              </div>
             </div>
-            <ScheduleView
-              schedule={schedule}
-              employees={employees}
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              hasActiveSchedule={activeScheduleId !== null}
-              constraints={constraints}
-              selectedEmployee={selectedEmployee}
-              onSetConstraint={setConstraint}
-              onRemoveConstraint={removeConstraint}
-              onGenerateSchedule={onGenerateSchedule}
-              isGenerating={isGenerating}
-            />
           </div>
         </TabsContent>
 

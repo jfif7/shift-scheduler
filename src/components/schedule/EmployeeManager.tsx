@@ -83,7 +83,7 @@ export const EmployeeManager = ({
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-144 overflow-y-auto pr-2">
             {employees.map((employee) => (
               <div
                 key={employee.id}
