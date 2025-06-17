@@ -245,17 +245,14 @@ export const ScheduleView = ({
         )}
       </CardHeader>
       <CardContent>
-        {!hasActiveSchedule ? (
+        {!hasActiveSchedule && (
           <p className="text-muted-foreground">
             No active schedule selected. Please select a schedule from the
             schedule history above to view its generated schedule.
           </p>
-        ) : Object.keys(schedule).length === 0 ? (
-          <p className="text-muted-foreground">
-            No schedule generated yet. Click &quot;Generate Schedule&quot; to
-            create one.
-          </p>
-        ) : (
+        )}
+
+        {hasActiveSchedule && (
           <div>
             <h3 className="font-medium mb-4">
               {getMonthName(selectedMonth)} {selectedYear} Schedule
@@ -272,7 +269,6 @@ export const ScheduleView = ({
               {renderScheduleGrid()}
             </div>
 
-            {/* Show legend when in constraint mode */}
             {selectedEmployee && (
               <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                 <div className="text-sm font-medium text-blue-800 mb-2">
