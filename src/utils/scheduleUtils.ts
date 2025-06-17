@@ -8,25 +8,10 @@ import {
 import { getDaysInMonth, isWeekend } from "./dateUtils"
 import simulatedAnnealing from "simulated-annealing"
 
-/*
- * OPTIMIZED SIMULATED ANNEALING APPROACH
- *
- * This implementation uses a simplified OptimizedSchedule representation to speed up
- * the simulated annealing process:
- *
- * 1. OptimizedSchedule is a simple array of employee indices (no -1 values, no complex mapping)
- * 2. Length can exceed the actual slots needed - only first N slots are used for scheduling
- * 3. Initial generation: assign each employee their maximum shifts, then shuffle
- * 4. Neighbor generation: simple permutations (swap, move, shuffle sections)
- * 5. Cost calculation: only considers first totalSlotsNeeded elements
- * 6. Final conversion: maps back to original Schedule format only at the end
- *
- * Benefits:
- * - Much faster array operations (no object lookups, no string comparisons)
- * - Simpler neighbor generation (pure permutations vs complex constraint checking)
- * - Better memory efficiency during optimization
- * - Allows natural selection to handle optimization vs manual constraint enforcement
- */
+// Helper function to generate random integer from [0, x)
+const randint = (x: number): number => {
+  return Math.floor(Math.random() * x)
+}
 
 // Conversion functions between Schedule and OptimizedSchedule
 const optimizedToSchedule = (
@@ -79,7 +64,7 @@ const generateInitialSchedule = (employees: Employee[]): OptimizedSchedule => {
 
   // Shuffle
   for (let i = optimized.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
+    const j = randint(i + 1)
     ;[optimized[i], optimized[j]] = [optimized[j], optimized[i]]
   }
 
@@ -103,6 +88,7 @@ const calcCost = (
   // Penalty weights
   const AVOID_VIOLATION_PENALTY = 1000
   const UNFILLED_SHIFT_PENALTY = 1000
+  const DUPLICATE_PERSON_IN_SHIFT_PENALTY = 2000
   const CONSECUTIVE_PENALTY = 100
   const WEEKLY_LIMIT_PENALTY = 100
   const UNEVEN_DISTRIBUTION_PENALTY = 50
@@ -133,6 +119,33 @@ const calcCost = (
       const empIndex = activeSlots[slotIndex]
       if (empIndex >= 0 && empIndex < employees.length) {
         assignedEmployeeIndices.push(empIndex)
+      }
+    }
+
+    // Check for duplicate persons in the same shift
+    for (let shift = 0; shift < shiftsPerDay; shift++) {
+      const shiftStartSlot =
+        day * shiftsPerDay * personsPerShift + shift * personsPerShift
+      const shiftEndSlot = Math.min(
+        shiftStartSlot + personsPerShift,
+        activeSlots.length
+      )
+
+      const uniqueEmployees = new Set<number>()
+      for (
+        let slotIndex = shiftStartSlot;
+        slotIndex < shiftEndSlot;
+        slotIndex++
+      ) {
+        const empIndex = activeSlots[slotIndex]
+        if (empIndex >= 0 && empIndex < employees.length) {
+          uniqueEmployees.add(empIndex)
+        }
+      }
+
+      // If set length is less than personsPerShift, there are duplicates
+      if (uniqueEmployees.size < personsPerShift) {
+        cost += DUPLICATE_PERSON_IN_SHIFT_PENALTY
       }
     }
 
@@ -299,14 +312,6 @@ const calcCost = (
     cost += variance * UNEVEN_DISTRIBUTION_PENALTY
   }
 
-  // Penalty for employees exceeding their monthly shift limit (from active slots only)
-  employees.forEach((emp, index) => {
-    if (employeeShiftCounts[index] > emp.shiftsPerMonth) {
-      const excess = employeeShiftCounts[index] - emp.shiftsPerMonth
-      cost += excess * UNFILLED_SHIFT_PENALTY
-    }
-  })
-
   return cost
 }
 
@@ -318,52 +323,53 @@ const generateOptimizedNeighbor = (
 
   if (newOptimized.length < 2) return newOptimized
 
-  const operations = ["swap", "move", "shuffle_section"]
-  const operation = operations[Math.floor(Math.random() * operations.length)]
+  const operations = ["swap", "move", "reverse", "transport"]
+  const operation = operations[randint(operations.length)]
+  const i = randint(newOptimized.length)
+  const j = randint(newOptimized.length)
 
   switch (operation) {
     case "swap": {
-      // Swap two random positions
-      const pos1 = Math.floor(Math.random() * newOptimized.length)
-      const pos2 = Math.floor(Math.random() * newOptimized.length)
-
-      if (pos1 !== pos2) {
-        ;[newOptimized[pos1], newOptimized[pos2]] = [
-          newOptimized[pos2],
-          newOptimized[pos1],
-        ]
-      }
+      ;[newOptimized[i], newOptimized[j]] = [newOptimized[j], newOptimized[i]]
       break
     }
 
     case "move": {
-      // Move an element from one position to another
-      const fromPos = Math.floor(Math.random() * newOptimized.length)
-      const toPos = Math.floor(Math.random() * newOptimized.length)
+      const element = newOptimized.splice(i, 1)[0]
+      newOptimized.splice(j, 0, element)
+      break
+    }
 
-      if (fromPos !== toPos) {
-        const element = newOptimized.splice(fromPos, 1)[0]
-        newOptimized.splice(toPos, 0, element)
+    case "reverse": {
+      let left = Math.min(i, j)
+      let right = Math.max(i, j)
+      while (left < right) {
+        ;[newOptimized[left], newOptimized[right]] = [
+          newOptimized[right],
+          newOptimized[left],
+        ]
+        left++
+        right--
       }
       break
     }
 
-    case "shuffle_section": {
-      // Shuffle a small section of the array
-      const sectionSize = Math.min(5, Math.floor(newOptimized.length / 4))
-      const startPos = Math.floor(
-        Math.random() * (newOptimized.length - sectionSize)
-      )
+    case "transport": {
+      if (newOptimized.length < 3) break // Need at least 3 elements for meaningful transport
 
-      // Extract section, shuffle it, and put it back
-      const section = newOptimized.slice(startPos, startPos + sectionSize)
-      for (let i = section.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
-        ;[section[i], section[j]] = [section[j], section[i]]
+      const start = Math.min(i, j)
+      const end = Math.max(i, j)
+
+      if (start < end) {
+        // Extract the segment [start, end]
+        const segment = newOptimized.splice(start, end - start + 1)
+
+        // Choose insertion position k (excluding the original range)
+        const k = randint(newOptimized.length)
+
+        // Insert the segment at position k
+        newOptimized.splice(k, 0, ...segment)
       }
-
-      // Replace the section
-      newOptimized.splice(startPos, sectionSize, ...section)
       break
     }
   }
@@ -410,7 +416,7 @@ export const generateSchedule = (
   // Configure simulated annealing with optimized schedule
   const tempMax = 1000
   const tempMin = 0.1
-  const coolingRate = 0.99
+  const coolingRate = 0.95
 
   // Temperature function
   const getTemp = (previousTemp: number) => previousTemp * coolingRate
