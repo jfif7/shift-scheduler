@@ -19,13 +19,13 @@ const optimizedToSchedule = (
   employees: Employee[],
   settings: ScheduleSettings,
   daysInMonth: number
-): Schedule | null => {
+): Schedule => {
   const { shiftsPerDay, personsPerShift } = settings
   const totalSlotsNeeded = daysInMonth * shiftsPerDay * personsPerShift
 
   // Return null if not enough slots in optimized array
   if (optimized.length < totalSlotsNeeded) {
-    return null
+    throw new Error("Not enough slots in optimized schedule")
   }
 
   const schedule: Schedule = {}
@@ -87,61 +87,56 @@ const calcCost = (
 
   // Penalty weights
   const AVOID_VIOLATION_PENALTY = 1000
-  const UNFILLED_SHIFT_PENALTY = 1000
   const DUPLICATE_PERSON_IN_SHIFT_PENALTY = 2000
   const CONSECUTIVE_PENALTY = 100
   const WEEKLY_LIMIT_PENALTY = 100
   const UNEVEN_DISTRIBUTION_PENALTY = 50
   const MISSED_PREFERENCE_PENALTY = 10
-  const WEEKEND_COVERAGE_PENALTY = 20
   const REST_DAYS_PENALTY = 80
+  const HOLIDAY_DISTRIBUTION_PENALTY = 1000
+  const WEEKEND_CONSECUTIVE_PENALTY = 50
 
   // Track employee metrics
   const employeeShiftCounts = new Array(employees.length).fill(0)
   const employeeConsecutiveDays = employees.map(() => ({ current: 0, max: 0 }))
+  const employeeHolidayShifts = new Array(employees.length).fill(0)
+  const employeeWeekdayShifts = new Array(employees.length).fill(0)
+  const employeeWeekendConsecutiveDays = employees.map(() => ({
+    current: 0,
+    max: 0,
+  }))
 
   // Only consider the first totalSlotsNeeded slots
   const activeSlots = optimized.slice(0, totalSlotsNeeded)
+  if (activeSlots.length < totalSlotsNeeded) {
+    throw new Error(
+      `Optimized schedule does not have enough slots: expected ${totalSlotsNeeded}, got ${activeSlots.length}`
+    )
+  }
+  activeSlots.forEach((emp) => {
+    if (emp < -1 || emp >= employees.length) {
+      throw new Error(`Invalid employee index ${emp} in optimized schedule`)
+    }
+  })
 
   // Check each day
   for (let day = 0; day < daysInMonth; day++) {
     const dayNumber = day + 1
-    const assignedEmployeeIndices: number[] = []
 
     // Get all assigned employees for this day
     const dayStartSlot = day * shiftsPerDay * personsPerShift
-    const dayEndSlot = Math.min(
-      (day + 1) * shiftsPerDay * personsPerShift,
-      activeSlots.length
-    )
+    const dayEndSlot = dayStartSlot + shiftsPerDay * personsPerShift
 
-    for (let slotIndex = dayStartSlot; slotIndex < dayEndSlot; slotIndex++) {
-      const empIndex = activeSlots[slotIndex]
-      if (empIndex >= 0 && empIndex < employees.length) {
-        assignedEmployeeIndices.push(empIndex)
-      }
-    }
+    const assignedEmployeeIndices = activeSlots.slice(dayStartSlot, dayEndSlot)
 
     // Check for duplicate persons in the same shift
     for (let shift = 0; shift < shiftsPerDay; shift++) {
-      const shiftStartSlot =
-        day * shiftsPerDay * personsPerShift + shift * personsPerShift
-      const shiftEndSlot = Math.min(
-        shiftStartSlot + personsPerShift,
-        activeSlots.length
-      )
+      const shiftStartSlot = dayStartSlot + shift * personsPerShift
+      const shiftEndSlot = shiftStartSlot + personsPerShift
 
-      const uniqueEmployees = new Set<number>()
-      for (
-        let slotIndex = shiftStartSlot;
-        slotIndex < shiftEndSlot;
-        slotIndex++
-      ) {
-        const empIndex = activeSlots[slotIndex]
-        if (empIndex >= 0 && empIndex < employees.length) {
-          uniqueEmployees.add(empIndex)
-        }
-      }
+      const uniqueEmployees = new Set(
+        activeSlots.slice(shiftStartSlot, shiftEndSlot)
+      )
 
       // If set length is less than personsPerShift, there are duplicates
       if (uniqueEmployees.size < personsPerShift) {
@@ -149,16 +144,9 @@ const calcCost = (
       }
     }
 
-    const shiftsNeeded = shiftsPerDay * personsPerShift
     const isWeekendDay = isWeekend(dayNumber, selectedMonth, selectedYear)
 
-    // Penalty for unfilled shifts
-    if (assignedEmployeeIndices.length < shiftsNeeded) {
-      cost +=
-        (shiftsNeeded - assignedEmployeeIndices.length) * UNFILLED_SHIFT_PENALTY
-    }
-
-    // Check avoid constraints
+    // Check constraints
     constraints.forEach((constraint) => {
       if (constraint.type === "avoid" && constraint.date === dayNumber) {
         const empIndex = employees.findIndex(
@@ -168,10 +156,6 @@ const calcCost = (
           cost += AVOID_VIOLATION_PENALTY
         }
       }
-    })
-
-    // Check prefer constraints (penalty for missing them)
-    constraints.forEach((constraint) => {
       if (constraint.type === "prefer" && constraint.date === dayNumber) {
         const empIndex = employees.findIndex(
           (emp) => emp.id === constraint.employeeId
@@ -182,20 +166,17 @@ const calcCost = (
       }
     })
 
-    // Weekend coverage penalty
-    if (isWeekendDay && settings.weekendCoverageRequired) {
-      const weekendWorkers = assignedEmployeeIndices.filter((empIndex) => {
-        return employees[empIndex]?.tags.includes("Weekend type")
-      })
-      if (weekendWorkers.length === 0 && assignedEmployeeIndices.length > 0) {
-        cost += WEEKEND_COVERAGE_PENALTY
-      }
-    }
-
     // Update employee metrics
     const uniqueAssigned = [...new Set(assignedEmployeeIndices)]
     uniqueAssigned.forEach((empIndex) => {
       employeeShiftCounts[empIndex]++
+
+      // Track holiday vs weekday shifts
+      if (isWeekendDay) {
+        employeeHolidayShifts[empIndex]++
+      } else {
+        employeeWeekdayShifts[empIndex]++
+      }
 
       // Check consecutive days
       if (day > 0) {
@@ -206,7 +187,7 @@ const calcCost = (
 
         for (
           let slotIndex = yesterdayStartSlot;
-          slotIndex < Math.min(yesterdayEndSlot, activeSlots.length);
+          slotIndex < yesterdayEndSlot;
           slotIndex++
         ) {
           if (activeSlots[slotIndex] === empIndex) {
@@ -228,23 +209,79 @@ const calcCost = (
         employeeConsecutiveDays[empIndex].max,
         employeeConsecutiveDays[empIndex].current
       )
+
+      // Track weekend consecutive days for Weekend type employees
+      if (isWeekendDay && employees[empIndex]?.tags.includes("Weekend type")) {
+        if (day > 0) {
+          // Check if yesterday was also weekend and employee worked
+          const yesterdayNumber = day
+          const yesterdayIsWeekend = isWeekend(
+            yesterdayNumber,
+            selectedMonth,
+            selectedYear
+          )
+          const yesterdayStartSlot = (day - 1) * shiftsPerDay * personsPerShift
+          const yesterdayEndSlot = day * shiftsPerDay * personsPerShift
+          let workedYesterdayWeekend = false
+
+          if (yesterdayIsWeekend) {
+            for (
+              let slotIndex = yesterdayStartSlot;
+              slotIndex < Math.min(yesterdayEndSlot, activeSlots.length);
+              slotIndex++
+            ) {
+              if (activeSlots[slotIndex] === empIndex) {
+                workedYesterdayWeekend = true
+                break
+              }
+            }
+          }
+
+          if (workedYesterdayWeekend) {
+            employeeWeekendConsecutiveDays[empIndex].current++
+          } else {
+            employeeWeekendConsecutiveDays[empIndex].current = 1
+          }
+        } else {
+          employeeWeekendConsecutiveDays[empIndex].current = 1
+        }
+
+        employeeWeekendConsecutiveDays[empIndex].max = Math.max(
+          employeeWeekendConsecutiveDays[empIndex].max,
+          employeeWeekendConsecutiveDays[empIndex].current
+        )
+      } else {
+        // Reset weekend consecutive count for non-weekend days or non-weekend type employees
+        employeeWeekendConsecutiveDays[empIndex].current = 0
+      }
     })
 
     // Reset consecutive count for employees not working today
     employees.forEach((emp, index) => {
       if (!uniqueAssigned.includes(index)) {
         employeeConsecutiveDays[index].current = 0
+        employeeWeekendConsecutiveDays[index].current = 0
       }
     })
   }
 
   // Penalty for exceeding consecutive shifts limit
   employees.forEach((emp, index) => {
+    let penalty = 0
     if (employeeConsecutiveDays[index].max > settings.maxConsecutiveShifts) {
       const excess =
         employeeConsecutiveDays[index].max - settings.maxConsecutiveShifts
-      cost += excess * CONSECUTIVE_PENALTY
+      penalty += excess * CONSECUTIVE_PENALTY
     }
+    // Weekend type employees get bonus for consecutive weekend work that can offset consecutive penalties
+    if (emp.tags.includes("Weekend type")) {
+      if (employeeWeekendConsecutiveDays[index].max >= 2) {
+        penalty = 0
+      } else {
+        penalty += WEEKEND_CONSECUTIVE_PENALTY
+      }
+    }
+    cost += penalty
   })
 
   // Check weekly limits and rest days
@@ -311,6 +348,49 @@ const calcCost = (
       ) / employeeShiftCounts.length
     cost += variance * UNEVEN_DISTRIBUTION_PENALTY
   }
+
+  const totalHolidayShifts = employeeHolidayShifts.reduce(
+    (sum, count) => sum + count,
+    0
+  )
+  const totalWeekdayShifts = employeeWeekdayShifts.reduce(
+    (sum, count) => sum + count,
+    0
+  )
+
+  if (totalHolidayShifts > 0 && totalWeekdayShifts > 0) {
+    employees.forEach((_, empIndex) => {
+      const employeeTotalShifts = employeeShiftCounts[empIndex]
+      if (employeeTotalShifts > 0) {
+        const holidayRatio =
+          employeeHolidayShifts[empIndex] / employeeTotalShifts
+        const globalHolidayRatio =
+          totalHolidayShifts / (totalHolidayShifts + totalWeekdayShifts)
+
+        const holidayRatioDeviation = Math.abs(
+          holidayRatio - globalHolidayRatio
+        )
+
+        // 特别惩罚只值假日班或只值平日班的员工
+        if (
+          employeeHolidayShifts[empIndex] > 0 &&
+          employeeWeekdayShifts[empIndex] === 0 &&
+          employeeTotalShifts > 1
+        ) {
+          cost += HOLIDAY_DISTRIBUTION_PENALTY * 2
+        } else if (
+          employeeWeekdayShifts[empIndex] > 0 &&
+          employeeHolidayShifts[empIndex] === 0 &&
+          employeeTotalShifts > 1
+        ) {
+          cost += HOLIDAY_DISTRIBUTION_PENALTY
+        } else if (holidayRatioDeviation > 0.3) {
+          cost += holidayRatioDeviation * HOLIDAY_DISTRIBUTION_PENALTY
+        }
+      }
+    })
+  }
+  console.log(`Cost calculated: ${cost}`)
 
   return cost
 }
@@ -383,10 +463,10 @@ export const generateSchedule = (
   settings: ScheduleSettings,
   selectedMonth: number,
   selectedYear: number
-): { schedule: Schedule | null; success: boolean; message: string } => {
+): { schedule: Schedule; success: boolean; message: string } => {
   if (employees.length === 0) {
     return {
-      schedule: null,
+      schedule: {},
       success: false,
       message: "Please add employees before generating a schedule.",
     }
@@ -404,7 +484,7 @@ export const generateSchedule = (
 
   if (totalShiftsAvailable < totalShiftsNeeded) {
     return {
-      schedule: null,
+      schedule: {},
       success: false,
       message: `Need ${totalShiftsNeeded} total shifts, but only ${totalShiftsAvailable} available.`,
     }
@@ -416,7 +496,7 @@ export const generateSchedule = (
   // Configure simulated annealing with optimized schedule
   const tempMax = 1000
   const tempMin = 0.1
-  const coolingRate = 0.95
+  const coolingRate = 0.99
 
   // Temperature function
   const getTemp = (previousTemp: number) => previousTemp * coolingRate
@@ -479,8 +559,8 @@ export const generateSchedule = (
       finalCost === 0
         ? "Perfect schedule generated with all constraints satisfied!"
         : `Schedule generated with optimization score: ${Math.round(
-            Math.max(0, 1000 - finalCost)
-          )}/1000`
+            Math.max(0, finalCost)
+          )}`
 
     return {
       schedule: finalSchedule,
@@ -491,7 +571,7 @@ export const generateSchedule = (
     console.error("Simulated annealing failed:", error)
 
     return {
-      schedule: null,
+      schedule: {},
       success: false,
       message: "Simulated annealing failed.",
     }
