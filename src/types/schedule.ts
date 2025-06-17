@@ -16,6 +16,12 @@ export interface Schedule {
   [date: number]: string[] // employee IDs assigned to each date
 }
 
+// Optimized internal schedule representation for simulated annealing
+// Single array where each element is an employee index
+// Can be longer than needed - only the first daysInMonth * shiftsPerDay * personsPerShift slots are used
+// when converting back to Schedule. The extra slots allow for easier permutation-based neighbor generation.
+export type OptimizedSchedule = number[]
+
 export interface ScheduleSettings {
   shiftsPerDay: number
   personsPerShift: number
