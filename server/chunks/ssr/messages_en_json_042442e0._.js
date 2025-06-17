@@ -1,9 +1,0 @@
-module.exports = {
-
-"[project]/messages/en.json (json)": ((__turbopack_context__) => {
-
-var { g: global, __dirname } = __turbopack_context__;
-{
-__turbopack_context__.v(JSON.parse("{\"navigation\":{\"setup\":\"Setup\",\"constraints\":\"Constraints\"},\"schedule\":{\"title\":\"Schedule & Preferences\",\"generateButton\":\"Generate Schedule\",\"generating\":\"Generating...\",\"export\":\"Export\",\"exportCSV\":\"Export as CSV\",\"exportImage\":\"Export as Image\",\"settingPreferencesFor\":\"Setting preferences for:\",\"noActiveSchedule\":\"No active schedule selected. Please select a schedule from the schedule history above to view its generated schedule.\",\"monthSchedule\":\"{month} {year} Schedule\",\"clickToSetPreferences\":\"Click on days to set preferences:\",\"preferredDays\":\"Preferred days (✓)\",\"avoidDays\":\"Avoid days (✗)\",\"normalDays\":\"Normal days\"},\"days\":{\"sun\":\"Sun\",\"mon\":\"Mon\",\"tue\":\"Tue\",\"wed\":\"Wed\",\"thu\":\"Thu\",\"fri\":\"Fri\",\"sat\":\"Sat\"},\"months\":{\"january\":\"January\",\"february\":\"February\",\"march\":\"March\",\"april\":\"April\",\"may\":\"May\",\"june\":\"June\",\"july\":\"July\",\"august\":\"August\",\"september\":\"September\",\"october\":\"October\",\"november\":\"November\",\"december\":\"December\"},\"toast\":{\"noSchedule\":\"No schedule\",\"pleaseGenerateFirst\":\"Please generate a schedule first.\",\"csvExported\":\"CSV exported\",\"csvExportedDescription\":\"Schedule has been exported as CSV file.\",\"imageExported\":\"Image exported\",\"imageExportedDescription\":\"Schedule has been exported as PNG image.\",\"exportFailed\":\"Export failed\",\"csvExportFailedDescription\":\"Failed to export CSV file.\",\"imageExportFailedDescription\":\"Failed to export image file.\"}}"));}}),
-
-};
