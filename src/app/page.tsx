@@ -14,7 +14,7 @@ import { useScheduleGeneration } from "@/hooks/useScheduleGeneration"
 import { useTranslations } from "next-intl"
 
 export default function ScheduleManager() {
-  const t = useTranslations()
+  const t = useTranslations("page")
 
   const PREDEFINED_TAGS = [
     "tags.weekendType",
@@ -81,10 +81,8 @@ export default function ScheduleManager() {
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Schedule Manager</h1>
-        <p className="text-muted-foreground">
-          Manage employee schedules with constraints and preferences
-        </p>
+        <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("description")}</p>
       </div>
 
       <Tabs defaultValue="setup" className="space-y-6">

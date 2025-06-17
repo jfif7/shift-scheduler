@@ -1,4 +1,11 @@
 {
+    "app": {
+        "title": "Schedule Manager"
+    },
+    "page": {
+        "title": "Schedule Manager",
+        "description": "Manage employee schedules with constraints and preferences"
+    },
     "navigation": {
         "setup": "Setup",
         "constraints": "Constraints"
