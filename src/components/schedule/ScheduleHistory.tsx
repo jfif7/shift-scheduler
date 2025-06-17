@@ -38,6 +38,9 @@ export const ScheduleHistory = ({
   const [importFromScheduleId, setImportFromScheduleId] =
     useState<string>("auto")
 
+  // Auto-collapse when a schedule is selected
+  const shouldShowCollapsed = activeScheduleId && !isAddingSchedule
+
   const currentDate = new Date()
   const currentMonth = currentDate.getMonth()
   const currentYear = currentDate.getFullYear()
@@ -164,21 +167,48 @@ export const ScheduleHistory = ({
           <CardTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5" />
             Schedule History
+            {shouldShowCollapsed && activeScheduleId && (
+              <span className="text-sm font-normal text-muted-foreground">
+                -{" "}
+                {(() => {
+                  const activeSchedule = schedules.find(
+                    (s) => s.id === activeScheduleId
+                  )
+                  return activeSchedule
+                    ? `${getMonthName(activeSchedule.month)} ${
+                        activeSchedule.year
+                      }`
+                    : ""
+                })()}
+              </span>
+            )}
           </CardTitle>
-          <Button
-            onClick={() => {
-              const { month, year } = getNextMonthYear()
-              setIsAddingSchedule(true)
-              setNewMonth(month)
-              setNewYear(year)
-              setImportFromScheduleId("auto")
-            }}
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Add Schedule
-          </Button>
+          <div className="flex items-center gap-2">
+            {shouldShowCollapsed && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onScheduleSelect(null)}
+                className="flex items-center gap-2"
+              >
+                Show All
+              </Button>
+            )}
+            <Button
+              onClick={() => {
+                const { month, year } = getNextMonthYear()
+                setIsAddingSchedule(true)
+                setNewMonth(month)
+                setNewYear(year)
+                setImportFromScheduleId("auto")
+              }}
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Schedule
+            </Button>
+          </div>
         </div>
         {schedules.length === 0 && (
           <p className="text-sm text-muted-foreground">
@@ -186,166 +216,169 @@ export const ScheduleHistory = ({
           </p>
         )}
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Add Schedule Form */}
-        {isAddingSchedule && (
-          <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
-            <h4 className="font-medium">Create New Schedule</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Month</label>
-                <Select
-                  value={newMonth?.toString() || ""}
-                  onValueChange={(value) => setNewMonth(parseInt(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select month" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {months.map((month) => (
-                      <SelectItem key={month.value} value={month.value}>
-                        {month.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+      {!shouldShowCollapsed && (
+        <CardContent className="space-y-4">
+          {/* Add Schedule Form */}
+          {isAddingSchedule && (
+            <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
+              <h4 className="font-medium">Create New Schedule</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Month</label>
+                  <Select
+                    value={newMonth?.toString() || ""}
+                    onValueChange={(value) => setNewMonth(parseInt(value))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {months.map((month) => (
+                        <SelectItem key={month.value} value={month.value}>
+                          {month.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Year</label>
+                  <Select
+                    value={newYear?.toString() || ""}
+                    onValueChange={(value) => setNewYear(parseInt(value))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {years.map((year) => (
+                        <SelectItem key={year.value} value={year.value}>
+                          {year.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium">Year</label>
-                <Select
-                  value={newYear?.toString() || ""}
-                  onValueChange={(value) => setNewYear(parseInt(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select year" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {years.map((year) => (
-                      <SelectItem key={year.value} value={year.value}>
-                        {year.label}
+
+              {/* Employee Import Options */}
+              {schedules.length > 0 && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Employee Import</label>
+                  <Select
+                    value={importFromScheduleId}
+                    onValueChange={setImportFromScheduleId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose import option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="auto">
+                        Auto-import from most recent schedule
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      <SelectItem value="none">
+                        Start with empty employee list
+                      </SelectItem>
+                      {sortedSchedules.map((schedule) => (
+                        <SelectItem key={schedule.id} value={schedule.id}>
+                          Copy from {getMonthName(schedule.month)}{" "}
+                          {schedule.year} ({schedule.employees.length}{" "}
+                          employees)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Imported employees become independent copies - changes
+                    won&apos;t affect the original schedule.
+                  </p>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button onClick={handleAddSchedule} size="sm">
+                  Create Schedule
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsAddingSchedule(false)
+                    setNewMonth(null)
+                    setNewYear(null)
+                    setImportFromScheduleId("auto")
+                  }}
+                  size="sm"
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
+          )}
 
-            {/* Employee Import Options */}
-            {schedules.length > 0 && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Employee Import</label>
-                <Select
-                  value={importFromScheduleId}
-                  onValueChange={setImportFromScheduleId}
+          {/* Schedule List */}
+          {sortedSchedules.length > 0 && (
+            <div className="space-y-2">
+              {sortedSchedules.map((schedule) => (
+                <div
+                  key={schedule.id}
+                  className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                    schedule.id === activeScheduleId
+                      ? "bg-primary/10 border-primary"
+                      : "hover:bg-muted/50"
+                  }`}
+                  onClick={() => {
+                    if (schedule.id === activeScheduleId) {
+                      onScheduleSelect(null)
+                    } else {
+                      onScheduleSelect(schedule.id)
+                    }
+                  }}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose import option" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="auto">
-                      Auto-import from most recent schedule
-                    </SelectItem>
-                    <SelectItem value="none">
-                      Start with empty employee list
-                    </SelectItem>
-                    {sortedSchedules.map((schedule) => (
-                      <SelectItem key={schedule.id} value={schedule.id}>
-                        Copy from {getMonthName(schedule.month)} {schedule.year}{" "}
-                        ({schedule.employees.length} employees)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Imported employees become independent copies - changes
-                  won&apos;t affect the original schedule.
-                </p>
-              </div>
-            )}
-            <div className="flex gap-2">
-              <Button onClick={handleAddSchedule} size="sm">
-                Create Schedule
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsAddingSchedule(false)
-                  setNewMonth(null)
-                  setNewYear(null)
-                  setImportFromScheduleId("auto")
-                }}
-                size="sm"
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Schedule List */}
-        {sortedSchedules.length > 0 && (
-          <div className="space-y-2">
-            {sortedSchedules.map((schedule) => (
-              <div
-                key={schedule.id}
-                className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                  schedule.id === activeScheduleId
-                    ? "bg-primary/10 border-primary"
-                    : "hover:bg-muted/50"
-                }`}
-                onClick={() => {
-                  if (schedule.id === activeScheduleId) {
-                    onScheduleSelect(null)
-                  } else {
-                    onScheduleSelect(schedule.id)
-                  }
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        {schedule.isGenerated ? (
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <Circle className="w-4 h-4 text-muted-foreground" />
+                        )}
+                        <span className="font-medium">
+                          {getMonthName(schedule.month)} {schedule.year}
+                        </span>
+                      </div>
+                    </div>
                     <div className="flex items-center gap-2">
-                      {schedule.isGenerated ? (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <Circle className="w-4 h-4 text-muted-foreground" />
-                      )}
-                      <span className="font-medium">
-                        {getMonthName(schedule.month)} {schedule.year}
-                      </span>
+                      <div className="text-xs text-muted-foreground">
+                        {schedule.employees.length} employees
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteSchedule(
+                            schedule.id,
+                            schedule.month,
+                            schedule.year
+                          )
+                        }}
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="text-xs text-muted-foreground">
-                      {schedule.employees.length} employees
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDeleteSchedule(
-                          schedule.id,
-                          schedule.month,
-                          schedule.year
-                        )
-                      }}
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Created: {schedule.createdAt.toLocaleDateString()}
+                    {schedule.isGenerated && (
+                      <span className="ml-2 text-green-600">• Generated</span>
+                    )}
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Created: {schedule.createdAt.toLocaleDateString()}
-                  {schedule.isGenerated && (
-                    <span className="ml-2 text-green-600">• Generated</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      )}
     </Card>
   )
 }
