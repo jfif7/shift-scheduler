@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useLocale } from "@/contexts/LocaleContext"
+import { Globe } from "lucide-react"
 
 const languages = {
   en: { name: "English", flag: "🇺🇸" },
@@ -24,12 +25,9 @@ export function LanguageSwitcher() {
 
   return (
     <Select value={locale} onValueChange={handleLanguageChange}>
-      <SelectTrigger className="w-auto">
+      <SelectTrigger className="w-10 h-10 p-0 border-none hover:bg-muted/50 rounded-md">
         <SelectValue>
-          <span className="flex items-center gap-2">
-            <span>{languages[locale].flag}</span>
-            <span>{languages[locale].name}</span>
-          </span>
+          <Globe className="h-5 w-5" />
         </SelectValue>
       </SelectTrigger>
       <SelectContent>

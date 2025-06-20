@@ -4,9 +4,7 @@
     },
     "page": {
         "title": "班表管理系統",
-        "description": "管理員工班表，設定條件與偏好"
-    },
-    "navigation": {
+        "description": "管理員工班表，設定條件與偏好",
         "setup": "班表生成",
         "constraints": "條件設置"
     },

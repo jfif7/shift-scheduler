@@ -4,9 +4,7 @@
     },
     "page": {
         "title": "Schedule Manager",
-        "description": "Manage employee schedules with constraints and preferences"
-    },
-    "navigation": {
+        "description": "Manage employee schedules with constraints and preferences",
         "setup": "Setup",
         "constraints": "Constraints"
     },
