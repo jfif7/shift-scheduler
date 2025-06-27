@@ -12,15 +12,8 @@ export const useEmployeeManagement = (
 ) => {
   const addEmployee = () => {
     const newEmployeeText = t ? t("employees.newEmployee") : "New Employee"
-    const existingNumbers = employees
-      .filter((emp) => emp.name.startsWith(`${newEmployeeText} `))
-      .map((emp) => {
-        const match = emp.name.match(new RegExp(`${newEmployeeText} (\\d+)`))
-        return match ? Number.parseInt(match[1]) : 0
-      })
 
-    const nextNumber =
-      existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1
+    const nextNumber = employees.length + 1
     const paddedNumber = nextNumber.toString().padStart(3, "0")
 
     const newEmployee: Employee = {

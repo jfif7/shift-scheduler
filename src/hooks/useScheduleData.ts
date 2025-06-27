@@ -24,19 +24,13 @@ export const useScheduleData = () => {
   const [activeScheduleId, setActiveScheduleId] = useState<string | null>(null)
   const [settings, setSettings] = useState<ScheduleSettings>(DEFAULT_SETTINGS)
 
-  // Initialize with current month/year and load from localStorage
-  useEffect(() => {
-    loadFromLocalStorage()
-  }, [])
-
   const saveToLocalStorage = useCallback(() => {
     const data: ScheduleData = {
       schedules,
-      activeScheduleId,
       settings,
     }
     localStorage.setItem("scheduleData", JSON.stringify(data))
-  }, [schedules, activeScheduleId, settings])
+  }, [schedules, settings])
 
   // Save to localStorage whenever data changes
   useEffect(() => {
@@ -54,13 +48,16 @@ export const useScheduleData = () => {
             createdAt: new Date(schedule.createdAt),
           }))
         )
-        setActiveScheduleId(data.activeScheduleId || null)
         setSettings({ ...DEFAULT_SETTINGS, ...data.settings })
       } catch (error) {
         console.error("Error loading from localStorage:", error)
       }
     }
   }
+
+  useEffect(() => {
+    loadFromLocalStorage()
+  }, [])
 
   const addSchedule = (
     month: number,

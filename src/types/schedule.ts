@@ -46,6 +46,5 @@ export interface ScheduleItem {
 
 export interface ScheduleData {
   schedules: ScheduleItem[]
-  activeScheduleId: string | null
   settings: ScheduleSettings
 }
