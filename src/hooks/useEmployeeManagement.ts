@@ -1,5 +1,6 @@
 import { Employee, Constraint, Schedule } from "@/types/schedule"
 import { toast } from "sonner"
+import { v4 as uuidv4 } from "uuid"
 
 export const useEmployeeManagement = (
   employees: Employee[],
@@ -17,7 +18,7 @@ export const useEmployeeManagement = (
     const paddedNumber = nextNumber.toString().padStart(3, "0")
 
     const newEmployee: Employee = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       name: `${newEmployeeText} ${paddedNumber}`,
       shiftsPerMonth: 8,
       tags: [],

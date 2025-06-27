@@ -1,4 +1,5 @@
 import { Constraint } from "@/types/schedule"
+import { v4 as uuidv4 } from "uuid"
 
 export const useConstraintManagement = (
   constraints: Constraint[],
@@ -39,7 +40,7 @@ export const useConstraintManagement = (
 
     // Then add the new constraint
     const newConstraint: Constraint = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       employeeId,
       type,
       date,

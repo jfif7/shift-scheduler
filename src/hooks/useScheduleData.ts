@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { v4 as uuidv4 } from "uuid"
 import {
   ScheduleData,
   ScheduleSettings,
@@ -79,13 +80,13 @@ export const useScheduleData = () => {
         // Create independent copies of employees with new IDs
         employeesToImport = sourceSchedule.employees.map((employee) => ({
           ...employee,
-          id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`, // Generate new unique ID
+          id: uuidv4(),
         }))
       }
     }
 
     const newSchedule: ScheduleItem = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       month,
       year,
       employees: employeesToImport,
