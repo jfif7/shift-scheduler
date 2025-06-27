@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import {
   ScheduleData,
   ScheduleSettings,
@@ -23,19 +23,22 @@ export const useScheduleData = () => {
   const [schedules, setSchedules] = useState<ScheduleItem[]>([])
   const [activeScheduleId, setActiveScheduleId] = useState<string | null>(null)
   const [settings, setSettings] = useState<ScheduleSettings>(DEFAULT_SETTINGS)
+  const [loaded, setLoaded] = useState<boolean>(false)
 
-  const saveToLocalStorage = useCallback(() => {
+  useEffect(() => {
+    loadFromLocalStorage()
+    setLoaded(true)
+  }, [])
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    if(loaded === false) return
     const data: ScheduleData = {
       schedules,
       settings,
     }
     localStorage.setItem("scheduleData", JSON.stringify(data))
-  }, [schedules, settings])
-
-  // Save to localStorage whenever data changes
-  useEffect(() => {
-    saveToLocalStorage()
-  }, [saveToLocalStorage])
+  }, [schedules, settings, loaded])
 
   const loadFromLocalStorage = () => {
     const saved = localStorage.getItem("scheduleData")
@@ -54,10 +57,6 @@ export const useScheduleData = () => {
       }
     }
   }
-
-  useEffect(() => {
-    loadFromLocalStorage()
-  }, [])
 
   const addSchedule = (
     month: number,
