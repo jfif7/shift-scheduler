@@ -33,7 +33,7 @@ export const useScheduleData = () => {
 
   // Save to localStorage whenever data changes
   useEffect(() => {
-    if(loaded === false) return
+    if (loaded === false) return
     const data: ScheduleData = {
       schedules,
       settings,

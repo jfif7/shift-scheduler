@@ -20,8 +20,9 @@ export const useEmployeeManagement = (
     const newEmployee: Employee = {
       id: uuidv4(),
       name: `${newEmployeeText} ${paddedNumber}`,
-      minShiftsPerMonth: 4,
-      maxShiftsPerMonth: 8,
+      shiftsPerMonth: [4, 8],
+      weekdayShifts: [0, 8],
+      weekendShifts: [0, 8],
       tags: [],
     }
 

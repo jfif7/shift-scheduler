@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { DualRangeSlider } from "@/components/ui/dual-range-slider"
 import { Trash2 } from "lucide-react"
 import { Employee } from "@/types/schedule"
 import { useTranslations } from "next-intl"
@@ -33,40 +34,33 @@ export const EmployeeCard = ({
   onStopEditing,
 }: EmployeeCardProps) => {
   const [editingName, setEditingName] = useState<string>("")
-  const [editingMinShifts, setEditingMinShifts] = useState<number>(0)
-  const [editingMaxShifts, setEditingMaxShifts] = useState<number>(0)
+  const [editingShiftsPerMonth, setEditingShiftsPerMonth] = useState<
+    [number, number]
+  >([0, 0])
+  const [editingWeekdayShifts, setEditingWeekdayShifts] = useState<
+    [number, number]
+  >([0, 0])
+  const [editingWeekendShifts, setEditingWeekendShifts] = useState<
+    [number, number]
+  >([0, 0])
   const t = useTranslations()
 
   const startEditing = () => {
     setEditingName(employee.name)
-    setEditingMinShifts(employee.minShiftsPerMonth)
-    setEditingMaxShifts(employee.maxShiftsPerMonth)
+    setEditingShiftsPerMonth(employee.shiftsPerMonth)
+    setEditingWeekdayShifts(employee.weekdayShifts)
+    setEditingWeekendShifts(employee.weekendShifts)
     onStartEditing(employee)
   }
 
   const saveEdits = () => {
-    // Validate that min shifts doesn't exceed max shifts
-    if (editingMinShifts > editingMaxShifts) {
-      // Swap them if they're in wrong order
-      onUpdateEmployee(employee.id, {
-        name: editingName,
-        minShiftsPerMonth: editingMaxShifts,
-        maxShiftsPerMonth: editingMinShifts,
-      })
-    } else {
-      onUpdateEmployee(employee.id, {
-        name: editingName,
-        minShiftsPerMonth: editingMinShifts,
-        maxShiftsPerMonth: editingMaxShifts,
-      })
-    }
-    onStopEditing()
-  }
+    onUpdateEmployee(employee.id, {
+      name: editingName,
+      shiftsPerMonth: editingShiftsPerMonth,
+      weekdayShifts: editingWeekdayShifts,
+      weekendShifts: editingWeekendShifts,
+    })
 
-  const cancelEdits = () => {
-    setEditingName("")
-    setEditingMinShifts(0)
-    setEditingMaxShifts(0)
     onStopEditing()
   }
 
@@ -95,35 +89,58 @@ export const EmployeeCard = ({
           <p className="text-xs text-muted-foreground">
             {t("employees.shiftsRangeNote")}
           </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="editMinShifts" className="mb-1">
-                {t("employees.minShiftsPerMonth")}
-              </Label>
-              <Input
-                id="editMinShifts"
-                type="number"
-                min="0"
-                max="31"
-                value={editingMinShifts}
-                onChange={(e) =>
-                  setEditingMinShifts(Number.parseInt(e.target.value) || 0)
+          <div>
+            <Label className="mb-2">
+              {t("employees.minMaxShiftsPerMonth")}
+            </Label>
+            <div className="px-3 mb-8">
+              <DualRangeSlider
+                value={editingShiftsPerMonth}
+                onValueChange={(value) =>
+                  setEditingShiftsPerMonth(value as [number, number])
                 }
+                max={31}
+                min={0}
+                step={1}
+                className="w-full"
+                label={(value) => value?.toString()}
+                labelPosition="bottom"
               />
             </div>
-            <div>
-              <Label htmlFor="editMaxShifts" className="mb-1">
-                {t("employees.maxShiftsPerMonth")}
-              </Label>
-              <Input
-                id="editMaxShifts"
-                type="number"
-                min="0"
-                max="31"
-                value={editingMaxShifts}
-                onChange={(e) =>
-                  setEditingMaxShifts(Number.parseInt(e.target.value) || 0)
+          </div>
+
+          <div>
+            <Label className="mb-2">{t("employees.minMaxWeekdayShifts")}</Label>
+            <div className="px-3 mb-8">
+              <DualRangeSlider
+                value={editingWeekdayShifts}
+                onValueChange={(value) =>
+                  setEditingWeekdayShifts(value as [number, number])
                 }
+                max={23}
+                min={0}
+                step={1}
+                className="w-full"
+                label={(value) => value?.toString()}
+                labelPosition="bottom"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label className="mb-2">{t("employees.minMaxWeekendShifts")}</Label>
+            <div className="px-3 mb-8">
+              <DualRangeSlider
+                value={editingWeekendShifts}
+                onValueChange={(value) =>
+                  setEditingWeekendShifts(value as [number, number])
+                }
+                max={9}
+                min={0}
+                step={1}
+                className="w-full"
+                label={(value) => value?.toString()}
+                labelPosition="bottom"
               />
             </div>
           </div>
@@ -151,7 +168,7 @@ export const EmployeeCard = ({
             <Button onClick={saveEdits} size="sm">
               {t("employees.save")}
             </Button>
-            <Button onClick={cancelEdits} variant="outline" size="sm">
+            <Button onClick={onStopEditing} variant="outline" size="sm">
               {t("employees.cancel")}
             </Button>
             <Button
@@ -178,10 +195,10 @@ export const EmployeeCard = ({
               <div className="flex items-center gap-2">
                 <span className="font-medium">{employee.name}</span>
                 <Badge variant="secondary">
-                  {employee.minShiftsPerMonth === employee.maxShiftsPerMonth
-                    ? `${employee.minShiftsPerMonth} ${t("employees.shifts")}`
-                    : `${employee.minShiftsPerMonth}-${
-                        employee.maxShiftsPerMonth
+                  {employee.shiftsPerMonth[0] === employee.shiftsPerMonth[1]
+                    ? `${employee.shiftsPerMonth[0]} ${t("employees.shifts")}`
+                    : `${employee.shiftsPerMonth[0]}-${
+                        employee.shiftsPerMonth[1]
                       } ${t("employees.shifts")}`}
                 </Badge>
               </div>

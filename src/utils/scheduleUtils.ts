@@ -57,7 +57,7 @@ const generateInitialSchedule = (employees: Employee[]): OptimizedSchedule => {
   const optimized: OptimizedSchedule = []
 
   employees.forEach((emp, empIndex) => {
-    for (let i = 0; i < emp.maxShiftsPerMonth; i++) {
+    for (let i = 0; i < emp.shiftsPerMonth[1]; i++) {
       optimized.push(empIndex)
     }
   })
@@ -347,13 +347,13 @@ const calcCost = (
     const shiftsAssigned = employeeShiftCounts[empIndex]
 
     // Penalize if below minimum
-    if (shiftsAssigned < employee.minShiftsPerMonth) {
-      cost += (employee.minShiftsPerMonth - shiftsAssigned) * MIN_SHIFTS_PENALTY
+    if (shiftsAssigned < employee.shiftsPerMonth[0]) {
+      cost += (employee.shiftsPerMonth[0] - shiftsAssigned) * MIN_SHIFTS_PENALTY
     }
 
     // Penalize if above maximum
-    if (shiftsAssigned > employee.maxShiftsPerMonth) {
-      cost += (shiftsAssigned - employee.maxShiftsPerMonth) * MAX_SHIFTS_PENALTY
+    if (shiftsAssigned > employee.shiftsPerMonth[1]) {
+      cost += (shiftsAssigned - employee.shiftsPerMonth[1]) * MAX_SHIFTS_PENALTY
     }
   })
 
@@ -499,11 +499,11 @@ export const generateSchedule = (
   const totalShiftsNeeded =
     daysInMonth * settings.shiftsPerDay * settings.personsPerShift
   const totalMinShifts = employees.reduce(
-    (sum, emp) => sum + emp.minShiftsPerMonth,
+    (sum, emp) => sum + emp.shiftsPerMonth[0],
     0
   )
   const totalMaxShifts = employees.reduce(
-    (sum, emp) => sum + emp.maxShiftsPerMonth,
+    (sum, emp) => sum + emp.shiftsPerMonth[1],
     0
   )
 
