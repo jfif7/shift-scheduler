@@ -52,12 +52,12 @@ const optimizedToSchedule = (
   return schedule
 }
 
-// Simply assign everyone their maximum shifts
+// Generate initial schedule by assigning employees their maximum shifts
 const generateInitialSchedule = (employees: Employee[]): OptimizedSchedule => {
   const optimized: OptimizedSchedule = []
 
   employees.forEach((emp, empIndex) => {
-    for (let i = 0; i < emp.shiftsPerMonth; i++) {
+    for (let i = 0; i < emp.maxShiftsPerMonth; i++) {
       optimized.push(empIndex)
     }
   })
@@ -339,6 +339,24 @@ const calcCost = (
     })
   }
 
+  // Min/Max shifts per employee penalty
+  const MIN_SHIFTS_PENALTY = 200
+  const MAX_SHIFTS_PENALTY = 200
+
+  employees.forEach((employee, empIndex) => {
+    const shiftsAssigned = employeeShiftCounts[empIndex]
+
+    // Penalize if below minimum
+    if (shiftsAssigned < employee.minShiftsPerMonth) {
+      cost += (employee.minShiftsPerMonth - shiftsAssigned) * MIN_SHIFTS_PENALTY
+    }
+
+    // Penalize if above maximum
+    if (shiftsAssigned > employee.maxShiftsPerMonth) {
+      cost += (shiftsAssigned - employee.maxShiftsPerMonth) * MAX_SHIFTS_PENALTY
+    }
+  })
+
   // Even distribution penalty
   if (settings.evenDistribution) {
     const avgShifts =
@@ -480,16 +498,28 @@ export const generateSchedule = (
   // Calculate total shifts needed and available
   const totalShiftsNeeded =
     daysInMonth * settings.shiftsPerDay * settings.personsPerShift
-  const totalShiftsAvailable = employees.reduce(
-    (sum, emp) => sum + emp.shiftsPerMonth,
+  const totalMinShifts = employees.reduce(
+    (sum, emp) => sum + emp.minShiftsPerMonth,
+    0
+  )
+  const totalMaxShifts = employees.reduce(
+    (sum, emp) => sum + emp.maxShiftsPerMonth,
     0
   )
 
-  if (totalShiftsAvailable < totalShiftsNeeded) {
+  if (totalMaxShifts < totalShiftsNeeded) {
     return {
       schedule: {},
       success: false,
-      message: `Need ${totalShiftsNeeded} total shifts, but only ${totalShiftsAvailable} available.`,
+      message: `Not enough maximum shifts available (${totalMaxShifts}) to cover all required shifts (${totalShiftsNeeded})`,
+    }
+  }
+
+  if (totalMinShifts > totalShiftsNeeded) {
+    return {
+      schedule: {},
+      success: false,
+      message: `Minimum shifts required (${totalMinShifts}) exceed total shifts needed (${totalShiftsNeeded})`,
     }
   }
 

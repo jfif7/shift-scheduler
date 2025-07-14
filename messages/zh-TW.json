@@ -62,17 +62,17 @@
         "name": "姓名",
         "namePlaceholder": "員工姓名",
         "shiftsPerMonth": "每月班次",
+        "minShiftsPerMonth": "每月最少班次",
+        "maxShiftsPerMonth": "每月最多班次",
+        "shiftsRangeNote": "彈性排班的最小-最大範圍",
         "shifts": "班次",
         "tags": "標籤",
         "newEmployee": "新員工"
     },
     "tags": {
         "weekendType": "週末班",
-        "burger": "漢堡",
-        "morningShift": "早班",
-        "eveningShift": "晚班",
-        "manager": "經理",
-        "partTime": "兼職"
+        "rookie": "菜鳥",
+        "veteran": "老鳥"
     },
     "scheduleHistory": {
         "title": "班表歷史",

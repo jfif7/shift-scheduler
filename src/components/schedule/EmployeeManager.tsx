@@ -33,27 +33,41 @@ export const EmployeeManager = ({
 }: EmployeeManagerProps) => {
   const [editingEmployee, setEditingEmployee] = useState<string>("")
   const [editingName, setEditingName] = useState<string>("")
-  const [editingShifts, setEditingShifts] = useState<number>(0)
+  const [editingMinShifts, setEditingMinShifts] = useState<number>(0)
+  const [editingMaxShifts, setEditingMaxShifts] = useState<number>(0)
   const t = useTranslations()
 
   const startEditingEmployee = (employee: Employee) => {
     setEditingEmployee(employee.id)
     setEditingName(employee.name)
-    setEditingShifts(employee.shiftsPerMonth)
+    setEditingMinShifts(employee.minShiftsPerMonth)
+    setEditingMaxShifts(employee.maxShiftsPerMonth)
   }
 
   const saveEmployeeEdits = () => {
-    onUpdateEmployee(editingEmployee, {
-      name: editingName,
-      shiftsPerMonth: editingShifts,
-    })
+    // Validate that min shifts doesn't exceed max shifts
+    if (editingMinShifts > editingMaxShifts) {
+      // Swap them if they're in wrong order
+      onUpdateEmployee(editingEmployee, {
+        name: editingName,
+        minShiftsPerMonth: editingMaxShifts,
+        maxShiftsPerMonth: editingMinShifts,
+      })
+    } else {
+      onUpdateEmployee(editingEmployee, {
+        name: editingName,
+        minShiftsPerMonth: editingMinShifts,
+        maxShiftsPerMonth: editingMaxShifts,
+      })
+    }
     setEditingEmployee("")
   }
 
   const cancelEmployeeEdits = () => {
     setEditingEmployee("")
     setEditingName("")
-    setEditingShifts(0)
+    setEditingMinShifts(0)
+    setEditingMaxShifts(0)
   }
 
   return (
@@ -98,36 +112,55 @@ export const EmployeeManager = ({
                   {editingEmployee === employee.id ? (
                     // Editing mode
                     <div className="p-4 space-y-4">
+                      <div>
+                        <Label htmlFor="editName">{t("employees.name")}</Label>
+                        <Input
+                          id="editName"
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          placeholder={t("employees.namePlaceholder")}
+                        />
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="editName">
-                            {t("employees.name")}
+                          <Label htmlFor="editMinShifts">
+                            {t("employees.minShiftsPerMonth")}
                           </Label>
                           <Input
-                            id="editName"
-                            value={editingName}
-                            onChange={(e) => setEditingName(e.target.value)}
-                            placeholder={t("employees.namePlaceholder")}
+                            id="editMinShifts"
+                            type="number"
+                            min="0"
+                            max="31"
+                            value={editingMinShifts}
+                            onChange={(e) =>
+                              setEditingMinShifts(
+                                Number.parseInt(e.target.value) || 0
+                              )
+                            }
                           />
                         </div>
                         <div>
-                          <Label htmlFor="editShifts">
-                            {t("employees.shiftsPerMonth")}
+                          <Label htmlFor="editMaxShifts">
+                            {t("employees.maxShiftsPerMonth")}
                           </Label>
                           <Input
-                            id="editShifts"
+                            id="editMaxShifts"
                             type="number"
-                            min="1"
+                            min="0"
                             max="31"
-                            value={editingShifts}
+                            value={editingMaxShifts}
                             onChange={(e) =>
-                              setEditingShifts(
+                              setEditingMaxShifts(
                                 Number.parseInt(e.target.value) || 0
                               )
                             }
                           />
                         </div>
                       </div>
+
+                      <p className="text-xs text-muted-foreground">
+                        {t("employees.shiftsRangeNote")}
+                      </p>
 
                       <div>
                         <Label>{t("employees.tags")}</Label>
@@ -187,7 +220,14 @@ export const EmployeeManager = ({
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{employee.name}</span>
                             <Badge variant="secondary">
-                              {employee.shiftsPerMonth} {t("employees.shifts")}
+                              {employee.minShiftsPerMonth ===
+                              employee.maxShiftsPerMonth
+                                ? `${employee.minShiftsPerMonth} ${t(
+                                    "employees.shifts"
+                                  )}`
+                                : `${employee.minShiftsPerMonth}-${
+                                    employee.maxShiftsPerMonth
+                                  } ${t("employees.shifts")}`}
                             </Badge>
                           </div>
                           {employee.tags.length > 0 && (

@@ -62,17 +62,17 @@
         "name": "Name",
         "namePlaceholder": "Employee name",
         "shiftsPerMonth": "Shifts per Month",
+        "minShiftsPerMonth": "Min Shifts per Month",
+        "maxShiftsPerMonth": "Max Shifts per Month",
+        "shiftsRangeNote": "Min-Max range for flexible scheduling",
         "shifts": "shifts",
         "tags": "Tags",
         "newEmployee": "New Employee"
     },
     "tags": {
         "weekendType": "Weekend type",
-        "burger": "Burger",
-        "morningShift": "Morning shift",
-        "eveningShift": "Evening shift",
-        "manager": "Manager",
-        "partTime": "Part-time"
+        "rookie": "Rookie",
+        "veteran": "Veteran"
     },
     "scheduleHistory": {
         "title": "Schedule History",

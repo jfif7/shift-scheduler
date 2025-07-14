@@ -17,14 +17,7 @@ import { useTranslations } from "next-intl"
 export default function ScheduleManager() {
   const t = useTranslations()
 
-  const PREDEFINED_TAGS = [
-    "tags.weekendType",
-    "tags.burger",
-    "tags.morningShift",
-    "tags.eveningShift",
-    "tags.manager",
-    "tags.partTime",
-  ]
+  const PREDEFINED_TAGS = ["tags.weekendType", "tags.rookie", "tags.veteran"]
   const {
     // Schedule history management
     schedules,

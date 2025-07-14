@@ -1,7 +1,8 @@
 export interface Employee {
   id: string
   name: string
-  shiftsPerMonth: number
+  minShiftsPerMonth: number
+  maxShiftsPerMonth: number
   tags: string[]
 }
 
