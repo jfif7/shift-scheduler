@@ -86,15 +86,19 @@ const calcCost = (
   const totalSlotsNeeded = daysInMonth * shiftsPerDay * personsPerShift
 
   // Penalty weights
-  const AVOID_VIOLATION_PENALTY = 1000
-  const DUPLICATE_PERSON_IN_SHIFT_PENALTY = 2000
-  const CONSECUTIVE_PENALTY = 100
-  const WEEKLY_LIMIT_PENALTY = 100
-  const UNEVEN_DISTRIBUTION_PENALTY = 50
-  const MISSED_PREFERENCE_PENALTY = 10
-  const REST_DAYS_PENALTY = 80
-  const HOLIDAY_DISTRIBUTION_PENALTY = 1000
-  const WEEKEND_CONSECUTIVE_PENALTY = 50
+  const PENALTY = {
+    AVOID_VIOLATION: 1000,
+    DUPLICATE_PERSON_IN_SHIFT: 2000,
+    CONSECUTIVE: 100,
+    WEEKLY_LIMIT: 100,
+    UNEVEN_DISTRIBUTION: 50,
+    MISSED_PREFERENCE: 10,
+    REST_DAYS: 80,
+    HOLIDAY_DISTRIBUTION: 1000,
+    WEEKEND_CONSECUTIVE: 50,
+    MIN_SHIFTS: 200,
+    MAX_SHIFTS: 200,
+  } as const
 
   // Track employee metrics
   const employeeShiftCounts = new Array(employees.length).fill(0)
@@ -140,7 +144,7 @@ const calcCost = (
 
       // If set length is less than personsPerShift, there are duplicates
       if (uniqueEmployees.size < personsPerShift) {
-        cost += DUPLICATE_PERSON_IN_SHIFT_PENALTY
+        cost += PENALTY.DUPLICATE_PERSON_IN_SHIFT
       }
     }
 
@@ -153,7 +157,7 @@ const calcCost = (
           (emp) => emp.id === constraint.employeeId
         )
         if (empIndex !== -1 && assignedEmployeeIndices.includes(empIndex)) {
-          cost += AVOID_VIOLATION_PENALTY
+          cost += PENALTY.AVOID_VIOLATION
         }
       }
       if (constraint.type === "prefer" && constraint.date === dayNumber) {
@@ -161,7 +165,7 @@ const calcCost = (
           (emp) => emp.id === constraint.employeeId
         )
         if (empIndex !== -1 && !assignedEmployeeIndices.includes(empIndex)) {
-          cost += MISSED_PREFERENCE_PENALTY
+          cost += PENALTY.MISSED_PREFERENCE
         }
       }
     })
@@ -274,14 +278,14 @@ const calcCost = (
     if (employeeConsecutiveDays[index].max > settings.maxConsecutiveShifts) {
       const excess =
         employeeConsecutiveDays[index].max - settings.maxConsecutiveShifts
-      penalty += excess * CONSECUTIVE_PENALTY
+      penalty += excess * PENALTY.CONSECUTIVE
     }
     // Weekend type employees get bonus for consecutive weekend work that can offset consecutive penalties
     if (emp.tags.includes("tags.weekendType")) {
       if (employeeWeekendConsecutiveDays[index].max >= 2) {
         penalty = 0
       } else {
-        penalty += WEEKEND_CONSECUTIVE_PENALTY
+        penalty += PENALTY.WEEKEND_CONSECUTIVE
       }
     }
     cost += penalty
@@ -324,7 +328,7 @@ const calcCost = (
       // Weekly limits penalty
       if (weeklyShifts > settings.maxShiftsPerWeek) {
         cost +=
-          (weeklyShifts - settings.maxShiftsPerWeek) * WEEKLY_LIMIT_PENALTY
+          (weeklyShifts - settings.maxShiftsPerWeek) * PENALTY.WEEKLY_LIMIT
       }
 
       // Rest days penalty
@@ -333,27 +337,24 @@ const calcCost = (
         if (daysBetween < settings.minRestDaysBetweenShifts) {
           cost +=
             (settings.minRestDaysBetweenShifts - daysBetween) *
-            REST_DAYS_PENALTY
+            PENALTY.REST_DAYS
         }
       }
     })
   }
 
   // Min/Max shifts per employee penalty
-  const MIN_SHIFTS_PENALTY = 200
-  const MAX_SHIFTS_PENALTY = 200
-
   employees.forEach((employee, empIndex) => {
     const shiftsAssigned = employeeShiftCounts[empIndex]
 
     // Penalize if below minimum
     if (shiftsAssigned < employee.shiftsPerMonth[0]) {
-      cost += (employee.shiftsPerMonth[0] - shiftsAssigned) * MIN_SHIFTS_PENALTY
+      cost += (employee.shiftsPerMonth[0] - shiftsAssigned) * PENALTY.MIN_SHIFTS
     }
 
     // Penalize if above maximum
     if (shiftsAssigned > employee.shiftsPerMonth[1]) {
-      cost += (shiftsAssigned - employee.shiftsPerMonth[1]) * MAX_SHIFTS_PENALTY
+      cost += (shiftsAssigned - employee.shiftsPerMonth[1]) * PENALTY.MAX_SHIFTS
     }
   })
 
@@ -367,7 +368,7 @@ const calcCost = (
         (sum, count) => sum + Math.pow(count - avgShifts, 2),
         0
       ) / employeeShiftCounts.length
-    cost += variance * UNEVEN_DISTRIBUTION_PENALTY
+    cost += variance * PENALTY.UNEVEN_DISTRIBUTION
   }
 
   const totalHolidayShifts = employeeHolidayShifts.reduce(
@@ -398,15 +399,15 @@ const calcCost = (
           employeeWeekdayShifts[empIndex] === 0 &&
           employeeTotalShifts > 1
         ) {
-          cost += HOLIDAY_DISTRIBUTION_PENALTY * 2
+          cost += PENALTY.HOLIDAY_DISTRIBUTION * 2
         } else if (
           employeeWeekdayShifts[empIndex] > 0 &&
           employeeHolidayShifts[empIndex] === 0 &&
           employeeTotalShifts > 1
         ) {
-          cost += HOLIDAY_DISTRIBUTION_PENALTY
+          cost += PENALTY.HOLIDAY_DISTRIBUTION
         } else if (holidayRatioDeviation > 0.3) {
-          cost += holidayRatioDeviation * HOLIDAY_DISTRIBUTION_PENALTY
+          cost += holidayRatioDeviation * PENALTY.HOLIDAY_DISTRIBUTION
         }
       }
     })

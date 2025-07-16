@@ -150,7 +150,7 @@
         "employeeAdded": "員工已添加",
         "employeeAddedDescription": "{name} 已添加到班表中。",
         "employeeUpdated": "員工已更新",
-        "employeeUpdatedDescription": "員工信息已保存。",
+        "employeeUpdatedDescription": "員工資訊已保存。",
         "invalidInput": "輸入無效",
         "selectBothMonthYear": "請選擇月份和年份。",
         "scheduleCreated": "班表已創建",
