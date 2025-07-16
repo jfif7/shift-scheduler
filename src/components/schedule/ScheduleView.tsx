@@ -134,7 +134,15 @@ export const ScheduleView = ({
 
     // Empty cells for days before month starts
     for (let i = 0; i < firstDay; i++) {
-      cells.push(<div key={`empty-${i}`} className="p-2 h-16"></div>)
+      const isLastInRow = (i + 1) % 7 === 0
+      const totalCells = firstDay + daysInMonth
+      const isInLastRow = i >= Math.floor(totalCells / 7) * 7
+
+      let emptyCellClass = "p-2 min-h-20 border-gray-200 "
+      if (!isLastInRow) emptyCellClass += "border-r "
+      if (!isInLastRow) emptyCellClass += "border-b "
+
+      cells.push(<div key={`empty-${i}`} className={emptyCellClass}></div>)
     }
 
     // Days of the month
@@ -152,32 +160,42 @@ export const ScheduleView = ({
       const isSelectedEmployeeScheduled =
         selectedEmployee && assignedEmployees.includes(selectedEmployee)
 
-      let cellClass = "p-2 h-100% border rounded-lg "
+      // Calculate position for border logic
+      const totalCells = firstDay + daysInMonth
+      const cellIndex = firstDay + day - 1
+      const isLastInRow = (cellIndex + 1) % 7 === 0
+      const isInLastRow = cellIndex >= Math.floor(totalCells / 7) * 7
+
+      let cellClass = "p-2 min-h-20 border-gray-200 "
+
+      // Add borders except for last column and last row
+      if (!isLastInRow) cellClass += "border-r "
+      if (!isInLastRow) cellClass += "border-b "
 
       // Apply constraint styling if selectedEmployee is set
       if (selectedEmployee) {
-        cellClass += "cursor-pointer transition-colors"
+        cellClass += "cursor-pointer transition-colors "
 
         // If selected employee is scheduled, add special highlighting
         if (isSelectedEmployeeScheduled) {
           if (existingConstraint?.type === "prefer") {
             cellClass +=
-              "bg-green-200 border-green-400 hover:bg-green-300 ring-2 ring-blue-400"
+              "bg-green-200 hover:bg-green-300 ring-2 ring-green-400 ring-inset"
           } else if (existingConstraint?.type === "avoid") {
             cellClass +=
-              "bg-red-200 border-red-400 hover:bg-red-300 ring-2 ring-blue-400"
+              "bg-red-200 hover:bg-red-300 ring-2 ring-red-400 ring-inset"
           } else {
             cellClass +=
-              "bg-blue-100 border-blue-400 hover:bg-blue-200 ring-2 ring-blue-400"
+              "bg-blue-100 hover:bg-blue-200 ring-2 ring-blue-400 ring-inset"
           }
         } else {
           // Normal constraint styling when employee is not scheduled
           if (existingConstraint?.type === "prefer") {
-            cellClass += "bg-green-100 border-green-300 hover:bg-green-200"
+            cellClass += "bg-green-100 hover:bg-green-200"
           } else if (existingConstraint?.type === "avoid") {
-            cellClass += "bg-red-100 border-red-300 hover:bg-red-200"
+            cellClass += "bg-red-100 hover:bg-red-200"
           } else {
-            cellClass += "hover:border-blue-300 hover:bg-blue-50"
+            cellClass += "hover:bg-blue-50"
           }
         }
       }
@@ -217,7 +235,22 @@ export const ScheduleView = ({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          {t("schedule.title")}
+          <div className="flex items-center gap-2">
+            {!hasActiveSchedule && t("schedule.title")}
+            {hasActiveSchedule &&
+              t("schedule.monthSchedule", {
+                month: getMonthName(selectedMonth, t),
+                year: selectedYear,
+              })}
+            {selectedEmployee && (
+              <p className="text-sm text-muted-foreground">
+                {t("schedule.settingPreferencesFor")}{" "}
+                <strong>
+                  {employees.find((emp) => emp.id === selectedEmployee)?.name}
+                </strong>
+              </p>
+            )}
+          </div>
           <div className="flex gap-2">
             {onGenerateSchedule && (
               <Button
@@ -263,14 +296,6 @@ export const ScheduleView = ({
             )}
           </div>
         </CardTitle>
-        {selectedEmployee && (
-          <p className="text-sm text-muted-foreground">
-            {t("schedule.settingPreferencesFor")}{" "}
-            <strong>
-              {employees.find((emp) => emp.id === selectedEmployee)?.name}
-            </strong>
-          </p>
-        )}
       </CardHeader>
       <CardContent>
         {!hasActiveSchedule && (
@@ -281,30 +306,26 @@ export const ScheduleView = ({
 
         {hasActiveSchedule && (
           <div>
-            <h3 className="font-medium mb-4">
-              {t("schedule.monthSchedule", {
-                month: getMonthName(selectedMonth, t),
-                year: selectedYear,
-              })}
-            </h3>
-            <div className="grid grid-cols-7 gap-2">
-              {[
-                t("days.0"),
-                t("days.1"),
-                t("days.2"),
-                t("days.3"),
-                t("days.4"),
-                t("days.5"),
-                t("days.6"),
-              ].map((day) => (
-                <div
-                  key={day}
-                  className="p-2 text-center font-medium bg-muted rounded"
-                >
-                  {day}
-                </div>
-              ))}
-              {renderScheduleGrid()}
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="grid grid-cols-7">
+                {[
+                  t("days.0"),
+                  t("days.1"),
+                  t("days.2"),
+                  t("days.3"),
+                  t("days.4"),
+                  t("days.5"),
+                  t("days.6"),
+                ].map((day) => (
+                  <div
+                    key={day}
+                    className="p-3 text-center font-medium bg-muted border-r border-b border-gray-200 last:border-r-0"
+                  >
+                    {day}
+                  </div>
+                ))}
+                {renderScheduleGrid()}
+              </div>
             </div>
 
             {selectedEmployee && (
