@@ -152,11 +152,11 @@ export const ScheduleView = ({
       const isSelectedEmployeeScheduled =
         selectedEmployee && assignedEmployees.includes(selectedEmployee)
 
-      let cellClass = "p-2 h-16 border rounded-lg "
+      let cellClass = "p-2 h-100% border rounded-lg "
 
       // Apply constraint styling if selectedEmployee is set
       if (selectedEmployee) {
-        cellClass += "cursor-pointer transition-colors "
+        cellClass += "cursor-pointer transition-colors"
 
         // If selected employee is scheduled, add special highlighting
         if (isSelectedEmployeeScheduled) {
@@ -194,7 +194,7 @@ export const ScheduleView = ({
             const isCurrentSelectedEmployee = selectedEmployee === empId
             return (
               <div
-                key={empId}
+                key={`${empId}-${day}`}
                 className={`text-xs truncate ${
                   isCurrentSelectedEmployee
                     ? "text-blue-800 font-semibold bg-blue-50 rounded border border-blue-200"

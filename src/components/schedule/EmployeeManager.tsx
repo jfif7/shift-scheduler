@@ -41,7 +41,7 @@ export const EmployeeManager = ({
   }
 
   return (
-    <Card className="flex flex-col h-[600px]">
+    <Card className="flex flex-col min-h-[400px] max-h-[80vh]">
       <CardHeader className="flex-shrink-0">
         <CardTitle>{t("employees.title")}</CardTitle>
         <p className="text-sm text-muted-foreground">

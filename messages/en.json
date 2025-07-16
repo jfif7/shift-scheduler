@@ -67,7 +67,9 @@
         "shiftsRangeNote": "Min-Max range for flexible scheduling",
         "shifts": "shifts",
         "tags": "Tags",
-        "newEmployee": "New Employee"
+        "newEmployee": "New Employee",
+        "showEmployees": "Show Employees",
+        "hideEmployees": "Hide Employees"
     },
     "tags": {
         "weekendType": "Weekend type",

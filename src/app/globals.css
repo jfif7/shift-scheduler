@@ -120,3 +120,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Collapsible Layout Animations */
+@layer components {
+  .collapsible-layout-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .employee-panel-enter {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  .employee-panel-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: all 0.3s ease-out;
+  }
+
+  .employee-panel-exit {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .employee-panel-exit-active {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.3s ease-in;
+  }
+}

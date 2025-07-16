@@ -67,7 +67,9 @@
         "shiftsRangeNote": "彈性排班的最小-最大範圍",
         "shifts": "班次",
         "tags": "標籤",
-        "newEmployee": "新員工"
+        "newEmployee": "新員工",
+        "showEmployees": "顯示員工",
+        "hideEmployees": "隱藏員工"
     },
     "tags": {
         "weekendType": "週末班",

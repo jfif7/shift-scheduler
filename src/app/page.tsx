@@ -2,7 +2,15 @@
 
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, Settings, Info } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Calendar,
+  Settings,
+  Info,
+  ChevronLeft,
+  ChevronRight,
+  Users,
+} from "lucide-react"
 import { ScheduleHistory } from "@/components/schedule/ScheduleHistory"
 import { EmployeeManager } from "@/components/schedule/EmployeeManager"
 import { ConstraintsPanel } from "@/components/schedule/ConstraintsPanel"
@@ -12,7 +20,9 @@ import { useScheduleData } from "@/hooks/useScheduleData"
 import { useEmployeeManagement } from "@/hooks/useEmployeeManagement"
 import { useConstraintManagement } from "@/hooks/useConstraintManagement"
 import { useScheduleGeneration } from "@/hooks/useScheduleGeneration"
+import { useCollapsibleLayout } from "@/hooks/useCollapsibleLayout"
 import { useTranslations } from "next-intl"
+import { cn } from "@/lib/utils"
 
 export default function ScheduleManager() {
   const t = useTranslations()
@@ -59,6 +69,9 @@ export default function ScheduleManager() {
 
   const { isGenerating, handleGenerateSchedule } = useScheduleGeneration()
 
+  const { isEmployeePanelCollapsed, toggleEmployeePanel } =
+    useCollapsibleLayout()
+
   const [selectedEmployee, setSelectedEmployee] = useState<string>("")
 
   const onGenerateSchedule = () => {
@@ -76,7 +89,7 @@ export default function ScheduleManager() {
     <div>
       <Tabs defaultValue="about" className="space-y-0">
         <TabsList className="w-full">
-          <div className="container flex justify-between items-center">
+          <div className="w-full flex justify-between items-center px-6">
             <div className="flex">
               <TabsTrigger value="about" className="flex items-center gap-2">
                 <Info className="w-4 h-4" />
@@ -114,7 +127,11 @@ export default function ScheduleManager() {
         </TabsContent>
 
         <TabsContent value="setup" className="mt-0">
-          <div className="container mx-auto p-6 max-w-6xl">
+          <div
+            className={
+              "container mx-auto p-6 transition-all duration-300 max-w-none"
+            }
+          >
             <div className="space-y-6">
               <ScheduleHistory
                 schedules={schedules}
@@ -123,32 +140,84 @@ export default function ScheduleManager() {
                 onScheduleAdd={addSchedule}
                 onScheduleDelete={deleteSchedule}
               />
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <EmployeeManager
-                  employees={employees}
-                  selectedEmployee={selectedEmployee}
-                  onEmployeeSelect={setSelectedEmployee}
-                  onAddEmployee={addEmployee}
-                  onRemoveEmployee={removeEmployee}
-                  onUpdateEmployee={updateEmployee}
-                  onToggleTag={toggleEmployeeTag}
-                  predefinedTags={PREDEFINED_TAGS}
-                  hasActiveSchedule={activeScheduleId !== null}
-                />
-                <div className="xl:col-span-2">
-                  <ScheduleView
-                    schedule={schedule}
-                    employees={employees}
-                    selectedMonth={selectedMonth}
-                    selectedYear={selectedYear}
-                    hasActiveSchedule={activeScheduleId !== null}
-                    constraints={constraints}
-                    selectedEmployee={selectedEmployee}
-                    onSetConstraint={setConstraint}
-                    onRemoveConstraint={removeConstraint}
-                    onGenerateSchedule={onGenerateSchedule}
-                    isGenerating={isGenerating}
-                  />
+
+              {/* Collapsible Layout */}
+              <div className="relative">
+                {/* Toggle Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleEmployeePanel}
+                  className="mb-4 shadow-sm hover:shadow-md transition-all"
+                  title={
+                    isEmployeePanelCollapsed
+                      ? "Show employee panel (Ctrl+B)"
+                      : "Hide employee panel (Ctrl+B)"
+                  }
+                >
+                  {isEmployeePanelCollapsed ? (
+                    <>
+                      <Users className="w-4 h-4 mr-2" />
+                      <ChevronRight className="w-4 h-4" />
+                      <span className="ml-1">
+                        {t("employees.showEmployees")}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronLeft className="w-4 h-4 mr-2" />
+                      <span>{t("employees.hideEmployees")}</span>
+                    </>
+                  )}
+                </Button>
+
+                {/* Dynamic Layout */}
+                <div
+                  className={cn(
+                    "transition-all duration-300 ease-in-out",
+                    isEmployeePanelCollapsed
+                      ? "grid grid-cols-1 gap-6"
+                      : "grid grid-cols-1 xl:grid-cols-5 gap-6"
+                  )}
+                >
+                  {/* Employee Panel - Conditional Rendering */}
+                  {!isEmployeePanelCollapsed && (
+                    <div className="transition-all duration-300">
+                      <EmployeeManager
+                        employees={employees}
+                        selectedEmployee={selectedEmployee}
+                        onEmployeeSelect={setSelectedEmployee}
+                        onAddEmployee={addEmployee}
+                        onRemoveEmployee={removeEmployee}
+                        onUpdateEmployee={updateEmployee}
+                        onToggleTag={toggleEmployeeTag}
+                        predefinedTags={PREDEFINED_TAGS}
+                        hasActiveSchedule={activeScheduleId !== null}
+                      />
+                    </div>
+                  )}
+
+                  {/* Schedule Panel - Dynamic Span */}
+                  <div
+                    className={cn(
+                      "transition-all duration-300",
+                      isEmployeePanelCollapsed ? "col-span-2" : "xl:col-span-4"
+                    )}
+                  >
+                    <ScheduleView
+                      schedule={schedule}
+                      employees={employees}
+                      selectedMonth={selectedMonth}
+                      selectedYear={selectedYear}
+                      hasActiveSchedule={activeScheduleId !== null}
+                      constraints={constraints}
+                      selectedEmployee={selectedEmployee}
+                      onSetConstraint={setConstraint}
+                      onRemoveConstraint={removeConstraint}
+                      onGenerateSchedule={onGenerateSchedule}
+                      isGenerating={isGenerating}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
