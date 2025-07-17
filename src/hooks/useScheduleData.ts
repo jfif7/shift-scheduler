@@ -65,12 +65,6 @@ export const useScheduleData = () => {
     year: number,
     importFromScheduleId?: string
   ): string => {
-    // Check for duplicate
-    const exists = schedules.some((s) => s.month === month && s.year === year)
-    if (exists) {
-      throw new Error(`Schedule for ${month}/${year} already exists`)
-    }
-
     // Get employees to import if specified
     let employeesToImport: Employee[] = []
     if (importFromScheduleId) {
