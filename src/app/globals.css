@@ -198,6 +198,7 @@
     }
   }
 }
+
 .constraint-button-avoid {
   background-color: var(--color-red-100);
   border-color: var(--color-red-300);
@@ -208,6 +209,7 @@
     }
   }
 }
+
 .constraint-button-null {
   background-color: var(--color-gray-50);
   border-color: var(--color-gray-200);

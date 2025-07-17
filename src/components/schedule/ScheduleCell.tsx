@@ -52,7 +52,7 @@ export const ScheduleCell = ({
     else if (allAvoid) dayConstraintType = "avoid"
   }
 
-  let cellClass = "p-1 min-h-24 border-gray-200 transition-colors "
+  let cellClass = "p-1 min-h-24 border-gray-400 transition-colors "
 
   // Add borders except for last column and last row
   if (!isLastInRow) cellClass += "border-r "
@@ -60,15 +60,15 @@ export const ScheduleCell = ({
 
   return (
     <div className={cellClass}>
-      <div className="text-sm font-medium mb-1 flex justify-between items-center">
-        {/* Day number header */}
-        <span className="text-center">{day}</span>
+      <div className="mb-1 relative flex justify-center items-center">
+        {/* Day number header - always centered */}
+        <span className="text-sm font-medium">{day}</span>
         {/* Day-level constraint button for multi-shift days */}
         {selectedEmployee && settings.shiftsPerDay > 1 && (
           <button
             onClick={() => onDayClick(day)}
-            className={`mt-1 w-100% text-[10px] border transition-colors constraint-button-${dayConstraintType}`}
-            title="Set preference for all shifts on this day"
+            className={`absolute right-0 text-[10px] border transition-colors truncate constraint-button-${dayConstraintType} max-w-[calc(50%-0.5rem)]`}
+            title={t("scheduleView.setAllShiftsDescription")}
           >
             {t(`scheduleView.setAllShifts_${dayConstraintType}`)}
           </button>

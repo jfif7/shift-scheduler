@@ -192,6 +192,7 @@
         "showShiftColors": "Show shift colors",
         "setAllShifts_null": "Set all shifts",
         "setAllShifts_prefer": "All shifts: prefer",
-        "setAllShifts_avoid": "All shifts: avoid"
+        "setAllShifts_avoid": "All shifts: avoid",
+        "setAllShiftsDescription": "Set preference for all shifts on this day"
     }
 }

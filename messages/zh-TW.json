@@ -192,6 +192,7 @@
         "showShiftColors": "顯示班次顏色",
         "setAllShifts_null": "設定全部班次",
         "setAllShifts_prefer": "通通可以",
-        "setAllShifts_avoid": "通通不行"
+        "setAllShifts_avoid": "通通不行",
+        "setAllShiftsDescription": "設定整天的偏好"
     }
 }

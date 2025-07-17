@@ -17,7 +17,6 @@ import {
   getMonthName,
 } from "@/utils/dateUtils"
 import { ScheduleCell } from "./ScheduleCell"
-import { ShiftLegend } from "./ShiftLegend"
 
 interface ScheduleViewProps {
   schedule: Schedule
@@ -198,7 +197,7 @@ export const ScheduleView = ({
       const isLastInRow = (i + 1) % 7 === 0
       const isInLastRow = i >= Math.floor(totalCells / 7) * 7
 
-      let emptyCellClass = "p-2 min-h-20 border-gray-200 "
+      let emptyCellClass = "p-2 min-h-20 border-gray-400 "
       if (!isLastInRow) emptyCellClass += "border-r "
       if (!isInLastRow) emptyCellClass += "border-b "
 
@@ -325,7 +324,7 @@ export const ScheduleView = ({
 
         {hasActiveSchedule && (
           <div>
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="border border-gray-400 rounded-lg overflow-hidden">
               <div className="grid grid-cols-7">
                 {[
                   t("days.0"),
@@ -338,7 +337,7 @@ export const ScheduleView = ({
                 ].map((day) => (
                   <div
                     key={day}
-                    className="p-3 text-center font-medium bg-muted border-r border-b border-gray-200 last:border-r-0"
+                    className="p-3 text-center font-medium bg-muted border-r border-b border-gray-400 last:border-r-0"
                   >
                     {day}
                   </div>

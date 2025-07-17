@@ -189,7 +189,7 @@ export default function ScheduleManager() {
                     "transition-all duration-300 ease-in-out",
                     isEmployeePanelCollapsed
                       ? "grid grid-cols-1 gap-6"
-                      : "grid grid-cols-1 xl:grid-cols-5 gap-6"
+                      : "grid grid-cols-1 xl:grid-cols-4 gap-6"
                   )}
                 >
                   {/* Employee Panel - Conditional Rendering */}
@@ -213,7 +213,7 @@ export default function ScheduleManager() {
                   <div
                     className={cn(
                       "transition-all duration-300",
-                      isEmployeePanelCollapsed ? "col-span-2" : "xl:col-span-4"
+                      isEmployeePanelCollapsed ? "col-span-2" : "xl:col-span-3"
                     )}
                   >
                     <ScheduleView
