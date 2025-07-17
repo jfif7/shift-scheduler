@@ -48,9 +48,14 @@ export const useEmployeeManagement = (
     // Remove from schedule
     const newSchedule = { ...schedule }
     Object.keys(newSchedule).forEach((date) => {
-      newSchedule[Number.parseInt(date)] = newSchedule[
-        Number.parseInt(date)
-      ].filter((empId: string) => empId !== id)
+      const daySchedule = newSchedule[Number.parseInt(date)]
+      if (daySchedule && daySchedule.shifts) {
+        // Remove employee from all shifts on this day
+        daySchedule.shifts = daySchedule.shifts.map((shift) => ({
+          ...shift,
+          employeeIds: shift.employeeIds.filter((empId) => empId !== id),
+        }))
+      }
     })
     setSchedule(newSchedule)
   }

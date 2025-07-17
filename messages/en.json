@@ -163,5 +163,28 @@
         "scheduleDeletedDescription": "{month} {year} schedule has been deleted.",
         "withImportedEmployees": " with imported employees",
         "withEmptyEmployeeList": " with empty employee list"
+    },
+    "shiftPreferences": {
+        "title": "Shift Preferences for {employee}",
+        "dayPreferences": "Day {date} Preferences",
+        "shiftLabel": "Shift {index}",
+        "morning": "Morning",
+        "evening": "Evening",
+        "night": "Night",
+        "applyToAllDay": "Apply to All Shifts",
+        "normal": "Normal",
+        "prefer": "Prefer",
+        "avoid": "Avoid",
+        "shiftSpecific": "Shift-specific preferences",
+        "clickShiftToSet": "Click on individual shifts to set preferences",
+        "preferredShifts": "Preferred shifts (✓)",
+        "avoidShifts": "Avoid shifts (✗)",
+        "normalShifts": "Normal shifts"
+    },
+    "settings": {
+        "shiftLabels": "Shift Labels",
+        "customizeShiftNames": "Customize shift names",
+        "shiftLabelPlaceholder": "Shift {index} name",
+        "shiftConfiguration": "Shift Configuration"
     }
 }

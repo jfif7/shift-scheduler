@@ -163,5 +163,28 @@
         "scheduleDeletedDescription": "{year}年{month}班表已刪除。",
         "withImportedEmployees": "並導入了員工",
         "withEmptyEmployeeList": "使用空員工列表"
+    },
+    "shiftPreferences": {
+        "title": "{employee} 的班次偏好",
+        "dayPreferences": "第 {date} 天偏好",
+        "shiftLabel": "班次 {index}",
+        "morning": "早班",
+        "evening": "晚班",
+        "night": "夜班",
+        "applyToAllDay": "應用到所有班次",
+        "normal": "正常",
+        "prefer": "偏好",
+        "avoid": "避免",
+        "shiftSpecific": "班次特定偏好",
+        "clickShiftToSet": "點擊個別班次來設定偏好",
+        "preferredShifts": "偏好班次 (✓)",
+        "avoidShifts": "避免班次 (✗)",
+        "normalShifts": "正常班次"
+    },
+    "settings": {
+        "shiftLabels": "班次標籤",
+        "customizeShiftNames": "自訂班次名稱",
+        "shiftLabelPlaceholder": "班次 {index} 名稱",
+        "shiftConfiguration": "班次配置"
     }
 }

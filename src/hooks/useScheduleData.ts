@@ -11,13 +11,14 @@ import {
 
 const DEFAULT_SETTINGS: ScheduleSettings = {
   shiftsPerDay: 1,
-  personsPerShift: 1,
+  personsPerShift: [1], // Array format for compatibility
   maxConsecutiveShifts: 3,
   minRestDaysBetweenShifts: 0,
   weekendCoverageRequired: true,
   maxShiftsPerWeek: 5,
   minShiftsPerWeek: 1,
   evenDistribution: true,
+  shiftLabels: ["Shift 1"],
 }
 
 export const useScheduleData = () => {

@@ -7,15 +7,26 @@ export interface Employee {
   tags: string[]
 }
 
-export interface Constraint {
+export interface ShiftConstraint {
   id: string
   employeeId: string
   type: "avoid" | "prefer"
   date: number
+  shiftIndex: number // 0-based: 0=first shift, 1=second shift, etc.
+}
+
+export type Constraint = ShiftConstraint
+
+export interface ShiftAssignment {
+  employeeIds: string[]
+}
+
+export interface DaySchedule {
+  shifts: ShiftAssignment[] // Array indexed by shift (0, 1, 2...)
 }
 
 export interface Schedule {
-  [date: number]: string[] // employee IDs assigned to each date
+  [date: number]: DaySchedule
 }
 
 // Optimized internal schedule representation for simulated annealing
@@ -26,13 +37,14 @@ export type OptimizedSchedule = number[]
 
 export interface ScheduleSettings {
   shiftsPerDay: number
-  personsPerShift: number
+  personsPerShift: number[] // Array to support different staffing per shift
   maxConsecutiveShifts: number
   minRestDaysBetweenShifts: number
   weekendCoverageRequired: boolean
   maxShiftsPerWeek: number
   minShiftsPerWeek: number
   evenDistribution: boolean
+  shiftLabels?: string[] // Optional shift naming/labeling
 }
 
 export interface ScheduleItem {
@@ -49,4 +61,39 @@ export interface ScheduleItem {
 export interface ScheduleData {
   schedules: ScheduleItem[]
   settings: ScheduleSettings
+}
+
+// Helper function for calculating slot positions with variable personsPerShift
+export const getShiftSlotRange = (
+  day: number,
+  shiftIndex: number,
+  settings: ScheduleSettings
+) => {
+  const totalPersonsPerDay = settings.personsPerShift.reduce(
+    (sum, persons) => sum + persons,
+    0
+  )
+  const dayStartSlot = (day - 1) * totalPersonsPerDay
+  let shiftStartSlot = dayStartSlot
+
+  for (let i = 0; i < shiftIndex; i++) {
+    shiftStartSlot += settings.personsPerShift[i]
+  }
+
+  return {
+    start: shiftStartSlot,
+    end: shiftStartSlot + settings.personsPerShift[shiftIndex],
+  }
+}
+
+// Helper function to calculate total slots needed
+export const getTotalSlotsNeeded = (
+  daysInMonth: number,
+  settings: ScheduleSettings
+): number => {
+  const totalPersonsPerDay = settings.personsPerShift.reduce(
+    (sum, persons) => sum + persons,
+    0
+  )
+  return daysInMonth * totalPersonsPerDay
 }

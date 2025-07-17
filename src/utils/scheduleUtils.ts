@@ -4,6 +4,7 @@ import {
   Schedule,
   ScheduleSettings,
   OptimizedSchedule,
+  getTotalSlotsNeeded,
 } from "@/types/schedule"
 import { getDaysInMonth, isWeekend } from "./dateUtils"
 import simulatedAnnealing from "simulated-annealing"
@@ -20,8 +21,7 @@ const optimizedToSchedule = (
   settings: ScheduleSettings,
   daysInMonth: number
 ): Schedule => {
-  const { shiftsPerDay, personsPerShift } = settings
-  const totalSlotsNeeded = daysInMonth * shiftsPerDay * personsPerShift
+  const totalSlotsNeeded = getTotalSlotsNeeded(daysInMonth, settings)
 
   // Return null if not enough slots in optimized array
   if (optimized.length < totalSlotsNeeded) {
@@ -32,20 +32,26 @@ const optimizedToSchedule = (
   let slotIndex = 0
 
   for (let day = 1; day <= daysInMonth; day++) {
-    schedule[day] = []
-    for (let shift = 0; shift < shiftsPerDay; shift++) {
-      for (let person = 0; person < personsPerShift; person++) {
+    schedule[day] = { shifts: [] }
+
+    for (let shift = 0; shift < settings.shiftsPerDay; shift++) {
+      const shiftEmployees: string[] = []
+      const personsThisShift = settings.personsPerShift[shift]
+
+      for (let person = 0; person < personsThisShift; person++) {
         const empIndex = optimized[slotIndex]
 
         if (empIndex >= 0 && empIndex < employees.length) {
-          schedule[day].push(employees[empIndex].id)
-          slotIndex++
+          shiftEmployees.push(employees[empIndex].id)
         } else {
           throw new Error(
             `Invalid employee index ${empIndex} in optimized schedule`
           )
         }
+        slotIndex++
       }
+
+      schedule[day].shifts.push({ employeeIds: shiftEmployees })
     }
   }
 
@@ -82,8 +88,7 @@ const calcCost = (
   selectedYear: number
 ): number => {
   let cost = 0
-  const { shiftsPerDay, personsPerShift } = settings
-  const totalSlotsNeeded = daysInMonth * shiftsPerDay * personsPerShift
+  const totalSlotsNeeded = getTotalSlotsNeeded(daysInMonth, settings)
 
   // Penalty weights
   const PENALTY = {
@@ -126,45 +131,51 @@ const calcCost = (
   // Check each day
   for (let day = 0; day < daysInMonth; day++) {
     const dayNumber = day + 1
-
-    // Get all assigned employees for this day
-    const dayStartSlot = day * shiftsPerDay * personsPerShift
-    const dayEndSlot = dayStartSlot + shiftsPerDay * personsPerShift
-
-    const assignedEmployeeIndices = activeSlots.slice(dayStartSlot, dayEndSlot)
+    const dayRange = getDaySlotRange(dayNumber, settings)
+    const assignedEmployeeIndices = activeSlots.slice(
+      dayRange.start,
+      dayRange.end
+    )
 
     // Check for duplicate persons in the same shift
-    for (let shift = 0; shift < shiftsPerDay; shift++) {
-      const shiftStartSlot = dayStartSlot + shift * personsPerShift
-      const shiftEndSlot = shiftStartSlot + personsPerShift
+    for (let shift = 0; shift < settings.shiftsPerDay; shift++) {
+      const shiftRange = getShiftSlotRange(dayNumber, shift, settings)
+      const shiftEmployees = activeSlots.slice(shiftRange.start, shiftRange.end)
+      const uniqueEmployees = new Set(shiftEmployees)
 
-      const uniqueEmployees = new Set(
-        activeSlots.slice(shiftStartSlot, shiftEndSlot)
-      )
-
-      // If set length is less than personsPerShift, there are duplicates
-      if (uniqueEmployees.size < personsPerShift) {
+      // If set length is less than personsPerShift for this shift, there are duplicates
+      if (uniqueEmployees.size < settings.personsPerShift[shift]) {
         cost += PENALTY.DUPLICATE_PERSON_IN_SHIFT
       }
     }
 
     const isWeekendDay = isWeekend(dayNumber, selectedMonth, selectedYear)
 
-    // Check constraints
     constraints.forEach((constraint) => {
-      if (constraint.type === "avoid" && constraint.date === dayNumber) {
+      if (constraint.date === dayNumber) {
         const empIndex = employees.findIndex(
           (emp) => emp.id === constraint.employeeId
         )
-        if (empIndex !== -1 && assignedEmployeeIndices.includes(empIndex)) {
+
+        if (empIndex === -1) return // Employee not found
+
+        const shiftRange = getShiftSlotRange(
+          dayNumber,
+          constraint.shiftIndex,
+          settings
+        )
+        const shiftEmployees = activeSlots.slice(
+          shiftRange.start,
+          shiftRange.end
+        )
+
+        if (constraint.type === "avoid" && shiftEmployees.includes(empIndex)) {
           cost += PENALTY.AVOID_VIOLATION
         }
-      }
-      if (constraint.type === "prefer" && constraint.date === dayNumber) {
-        const empIndex = employees.findIndex(
-          (emp) => emp.id === constraint.employeeId
-        )
-        if (empIndex !== -1 && !assignedEmployeeIndices.includes(empIndex)) {
+        if (
+          constraint.type === "prefer" &&
+          !shiftEmployees.includes(empIndex)
+        ) {
           cost += PENALTY.MISSED_PREFERENCE
         }
       }
@@ -185,13 +196,12 @@ const calcCost = (
       // Check consecutive days
       if (day > 0) {
         // Check if employee worked yesterday
-        const yesterdayStartSlot = (day - 1) * shiftsPerDay * personsPerShift
-        const yesterdayEndSlot = day * shiftsPerDay * personsPerShift
+        const yesterdayRange = getDaySlotRange(day, settings) // day is already dayNumber
         let workedYesterday = false
 
         for (
-          let slotIndex = yesterdayStartSlot;
-          slotIndex < yesterdayEndSlot;
+          let slotIndex = yesterdayRange.start;
+          slotIndex < yesterdayRange.end;
           slotIndex++
         ) {
           if (activeSlots[slotIndex] === empIndex) {
@@ -221,20 +231,19 @@ const calcCost = (
       ) {
         if (day > 0) {
           // Check if yesterday was also weekend and employee worked
-          const yesterdayNumber = day
+          const yesterdayNumber = day // day is already dayNumber
           const yesterdayIsWeekend = isWeekend(
             yesterdayNumber,
             selectedMonth,
             selectedYear
           )
-          const yesterdayStartSlot = (day - 1) * shiftsPerDay * personsPerShift
-          const yesterdayEndSlot = day * shiftsPerDay * personsPerShift
+          const yesterdayRange = getDaySlotRange(day, settings) // day is already dayNumber
           let workedYesterdayWeekend = false
 
           if (yesterdayIsWeekend) {
             for (
-              let slotIndex = yesterdayStartSlot;
-              slotIndex < Math.min(yesterdayEndSlot, activeSlots.length);
+              let slotIndex = yesterdayRange.start;
+              slotIndex < Math.min(yesterdayRange.end, activeSlots.length);
               slotIndex++
             ) {
               if (activeSlots[slotIndex] === empIndex) {
@@ -301,16 +310,12 @@ const calcCost = (
       const workDays: number[] = []
 
       for (let day = weekStart; day <= weekEnd; day++) {
-        const dayStartSlot = day * shiftsPerDay * personsPerShift
-        const dayEndSlot = Math.min(
-          (day + 1) * shiftsPerDay * personsPerShift,
-          activeSlots.length
-        )
+        const dayRange = getDaySlotRange(day + 1, settings) // Convert to 1-based day
         let workedThisDay = false
 
         for (
-          let slotIndex = dayStartSlot;
-          slotIndex < dayEndSlot;
+          let slotIndex = dayRange.start;
+          slotIndex < dayRange.end && slotIndex < activeSlots.length;
           slotIndex++
         ) {
           if (activeSlots[slotIndex] === empIndex) {
@@ -417,6 +422,36 @@ const calcCost = (
   return cost
 }
 
+// Helper function for calculating day slot range with variable personsPerShift
+const getDaySlotRange = (day: number, settings: ScheduleSettings) => {
+  const totalPersonsPerDay = settings.personsPerShift.reduce(
+    (sum, persons) => sum + persons,
+    0
+  )
+  const dayStartSlot = (day - 1) * totalPersonsPerDay
+  const dayEndSlot = day * totalPersonsPerDay
+  return { start: dayStartSlot, end: dayEndSlot }
+}
+
+// Helper function for calculating shift slot range within a day
+const getShiftSlotRange = (
+  day: number,
+  shiftIndex: number,
+  settings: ScheduleSettings
+) => {
+  const dayRange = getDaySlotRange(day, settings)
+  let shiftStart = dayRange.start
+
+  for (let i = 0; i < shiftIndex; i++) {
+    shiftStart += settings.personsPerShift[i]
+  }
+
+  return {
+    start: shiftStart,
+    end: shiftStart + settings.personsPerShift[shiftIndex],
+  }
+}
+
 // Generate a neighbor solution by making permutations of the optimized schedule
 const generateOptimizedNeighbor = (
   currentOptimized: OptimizedSchedule
@@ -497,8 +532,7 @@ export const generateSchedule = (
   const daysInMonth = getDaysInMonth(selectedMonth, selectedYear)
 
   // Calculate total shifts needed and available
-  const totalShiftsNeeded =
-    daysInMonth * settings.shiftsPerDay * settings.personsPerShift
+  const totalShiftsNeeded = getTotalSlotsNeeded(daysInMonth, settings)
   const totalMinShifts = employees.reduce(
     (sum, emp) => sum + emp.shiftsPerMonth[0],
     0

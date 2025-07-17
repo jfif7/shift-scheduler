@@ -43,12 +43,27 @@ export const ConstraintsPanel = ({
               min="1"
               max="3"
               value={settings.shiftsPerDay}
-              onChange={(e) =>
-                updateSetting(
-                  "shiftsPerDay",
-                  Number.parseInt(e.target.value) || 1
+              onChange={(e) => {
+                const newShiftsPerDay = Number.parseInt(e.target.value) || 1
+                // Ensure personsPerShift array matches shiftsPerDay length
+                const newPersonsPerShift = Array.from(
+                  { length: newShiftsPerDay },
+                  (_, i) => settings.personsPerShift[i] || 1
                 )
-              }
+                // Ensure shiftLabels array matches shiftsPerDay length
+                const newShiftLabels = Array.from(
+                  { length: newShiftsPerDay },
+                  (_, i) => settings.shiftLabels?.[i] || `Shift ${i + 1}`
+                )
+
+                // Batch all updates into a single call
+                onSettingsChange({
+                  ...settings,
+                  shiftsPerDay: newShiftsPerDay,
+                  personsPerShift: newPersonsPerShift,
+                  shiftLabels: newShiftLabels,
+                })
+              }}
             />
             <p className="text-xs text-muted-foreground">
               {t("constraints.shiftsPerDayDescription")}
@@ -56,26 +71,61 @@ export const ConstraintsPanel = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="personsPerShift">
-              {t("constraints.personsPerShift")}
-            </Label>
-            <Input
-              id="personsPerShift"
-              type="number"
-              min="1"
-              max="10"
-              value={settings.personsPerShift}
-              onChange={(e) =>
-                updateSetting(
-                  "personsPerShift",
-                  Number.parseInt(e.target.value) || 1
-                )
-              }
-            />
+            <Label>{t("constraints.personsPerShift")}</Label>
+            {settings.personsPerShift.map((persons, shiftIndex) => (
+              <div key={shiftIndex} className="flex gap-2 items-center">
+                <Label className="text-sm w-20">
+                  {settings.shiftLabels?.[shiftIndex] ||
+                    `Shift ${shiftIndex + 1}`}
+                  :
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={persons}
+                  onChange={(e) => {
+                    const newPersonsPerShift = [...settings.personsPerShift]
+                    newPersonsPerShift[shiftIndex] =
+                      Number.parseInt(e.target.value) || 1
+                    updateSetting("personsPerShift", newPersonsPerShift)
+                  }}
+                  className="w-20"
+                />
+              </div>
+            ))}
             <p className="text-xs text-muted-foreground">
               {t("constraints.personsPerShiftDescription")}
             </p>
           </div>
+
+          {/* Shift Labels Configuration */}
+          {settings.shiftsPerDay > 1 && (
+            <div className="space-y-2">
+              <Label>{t("settings.shiftLabels")}</Label>
+              {settings.shiftLabels?.map((label, shiftIndex) => (
+                <div key={shiftIndex} className="flex gap-2 items-center">
+                  <Label className="text-sm w-20">
+                    {t("shiftPreferences.shiftLabel", { index: shiftIndex + 1 })}:
+                  </Label>
+                  <Input
+                    type="text"
+                    value={label}
+                    placeholder={t("settings.shiftLabelPlaceholder", { index: shiftIndex + 1 })}
+                    onChange={(e) => {
+                      const newShiftLabels = [...(settings.shiftLabels || [])]
+                      newShiftLabels[shiftIndex] = e.target.value || `Shift ${shiftIndex + 1}`
+                      updateSetting("shiftLabels", newShiftLabels)
+                    }}
+                    className="flex-1"
+                  />
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground">
+                {t("settings.customizeShiftNames")}
+              </p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="maxConsecutive">
