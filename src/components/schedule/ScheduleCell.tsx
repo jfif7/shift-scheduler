@@ -5,6 +5,7 @@ import {
   Schedule,
 } from "@/types/schedule"
 import { useTranslations } from "next-intl"
+import { cn } from "@/lib/utils"
 
 interface ScheduleCellProps {
   day: number
@@ -52,14 +53,12 @@ export const ScheduleCell = ({
     else if (allAvoid) dayConstraintType = "avoid"
   }
 
-  let cellClass = "p-1 min-h-24 border-gray-400 transition-colors "
-
-  // Add borders except for last column and last row
-  if (!isLastInRow) cellClass += "border-r "
-  if (!isInLastRow) cellClass += "border-b "
+  const cellClasses = ["p-1 min-h-24 border-gray-400 transition-colors"]
+  if (!isLastInRow) cellClasses.push("border-r")
+  if (!isInLastRow) cellClasses.push("border-b")
 
   return (
-    <div className={cellClass}>
+    <div className={cn(cellClasses)}>
       <div className="mb-1 relative flex justify-center items-center">
         {/* Day number header - always centered */}
         <span className="text-sm font-medium">{day}</span>
@@ -67,7 +66,10 @@ export const ScheduleCell = ({
         {selectedEmployee && settings.shiftsPerDay > 1 && (
           <button
             onClick={() => onDayClick(day)}
-            className={`absolute right-0 text-[10px] border transition-colors truncate constraint-button-${dayConstraintType} max-w-[calc(50%-0.5rem)]`}
+            className={cn([
+              "absolute right-0 text-[10px] border transition-colors truncate max-w-[calc(50%-0.5rem)]",
+              `constraint-button-${dayConstraintType}`,
+            ])}
             title={t("scheduleView.setAllShiftsDescription")}
           >
             {t(`scheduleView.setAllShifts_${dayConstraintType}`)}
@@ -88,23 +90,23 @@ export const ScheduleCell = ({
             : null
 
           // Build class names for shift container
-          let shiftClass = `text-xs border min-h-6 cursor-pointer transition-colors `
-
-          // Add shift color classes only if enabled
-          if (showShiftColors && settings.shiftsPerDay > 0) {
-            shiftClass += `shift-${shiftIndex} `
+          const shiftClasses = [
+            "text-xs border min-h-6 cursor-pointer transition-colors relative",
+          ]
+          if (showShiftColors && settings.shiftsPerDay > 1) {
+            shiftClasses.push(`shift-${shiftIndex}`)
           }
 
           const isSelectedInThisShift =
             selectedEmployee && shiftEmployees.includes(selectedEmployee)
           if (isSelectedInThisShift) {
-            shiftClass += "ring-2 ring-blue-400 "
+            shiftClasses.push("ring-2 ring-blue-400")
           }
 
           return (
             <div
               key={`${day}-shift-${shiftIndex}`}
-              className={`${shiftClass} relative`}
+              className={cn(shiftClasses)}
               onClick={() => selectedEmployee && onShiftClick(day, shiftIndex)}
               title={shiftLabel}
             >
@@ -112,11 +114,12 @@ export const ScheduleCell = ({
               {shiftConstraint && (
                 <div className="absolute top-0 right-0 z-10">
                   <span
-                    className={`text-[8px] px-1 py-1 rounded text-white font-bold shadow-sm ${
+                    className={cn([
+                      "text-[8px] px-1 py-1 rounded text-white font-bold shadow-sm",
                       shiftConstraint.type === "prefer"
                         ? "bg-green-600"
-                        : "bg-red-600"
-                    }`}
+                        : "bg-red-600",
+                    ])}
                   >
                     {shiftConstraint.type === "prefer" ? "✓" : "✗"}
                   </span>
@@ -128,14 +131,16 @@ export const ScheduleCell = ({
                 {shiftEmployees.map((empId: string, idx: number) => {
                   const employee = employees.find((emp) => emp.id === empId)
                   const isCurrentSelectedEmployee = selectedEmployee === empId
+
                   return (
                     <div
                       key={`${empId}-${day}-${shiftIndex}-${idx}`}
-                      className={`text-[10px] truncate ${
+                      className={cn(
+                        "text-[10px] truncate",
                         isCurrentSelectedEmployee
                           ? "font-bold ring-1 ring-blue-400"
                           : ""
-                      }`}
+                      )}
                       title={employee?.name}
                     >
                       {employee?.name}

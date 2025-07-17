@@ -17,6 +17,7 @@ import {
   getMonthName,
 } from "@/utils/dateUtils"
 import { ScheduleCell } from "./ScheduleCell"
+import { cn } from "@/lib/utils"
 
 interface ScheduleViewProps {
   schedule: Schedule
@@ -197,11 +198,13 @@ export const ScheduleView = ({
       const isLastInRow = (i + 1) % 7 === 0
       const isInLastRow = i >= Math.floor(totalCells / 7) * 7
 
-      let emptyCellClass = "p-2 min-h-20 border-gray-400 "
-      if (!isLastInRow) emptyCellClass += "border-r "
-      if (!isInLastRow) emptyCellClass += "border-b "
+      const emptyCellClasses = ["p-2 min-h-20 border-gray-400"]
+      if (!isLastInRow) emptyCellClasses.push("border-r")
+      if (!isInLastRow) emptyCellClasses.push("border-b")
 
-      cells.push(<div key={`empty-${i}`} className={emptyCellClass}></div>)
+      cells.push(
+        <div key={`empty-${i}`} className={cn(emptyCellClasses)}></div>
+      )
     }
 
     // Days of the month
