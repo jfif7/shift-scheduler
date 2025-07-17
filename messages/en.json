@@ -186,5 +186,12 @@
         "customizeShiftNames": "Customize shift names",
         "shiftLabelPlaceholder": "Shift {index} name",
         "shiftConfiguration": "Shift Configuration"
+    },
+    "scheduleView": {
+        "hideShiftColors": "Hide shift colors",
+        "showShiftColors": "Show shift colors",
+        "setAllShifts_null": "Set all shifts",
+        "setAllShifts_prefer": "All shifts: prefer",
+        "setAllShifts_avoid": "All shifts: avoid"
     }
 }

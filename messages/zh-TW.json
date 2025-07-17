@@ -186,5 +186,12 @@
         "customizeShiftNames": "自訂班次名稱",
         "shiftLabelPlaceholder": "班次 {index} 名稱",
         "shiftConfiguration": "班次配置"
+    },
+    "scheduleView": {
+        "hideShiftColors": "隱藏班次顏色",
+        "showShiftColors": "顯示班次顏色",
+        "setAllShifts_null": "設定全部班次",
+        "setAllShifts_prefer": "通通可以",
+        "setAllShifts_avoid": "通通不行"
     }
 }

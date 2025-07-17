@@ -149,3 +149,72 @@
     transition: all 0.3s ease-in;
   }
 }
+
+/* Shift Color Coding System */
+.shift-0 {
+  background-color: #fef3c7; /* Morning - Amber */
+}
+
+.shift-1 {
+  background-color: #dbeafe; /* Day - Blue */
+}
+
+.shift-2 {
+  background-color: #e0e7ff; /* Evening - Indigo */
+}
+
+.shift-3 {
+  background-color: #f3e8ff; /* Night - Purple */
+}
+
+/* Legend color indicators */
+.shift-legend .shift-0 {
+  background-color: #fef3c7;
+  border-color: #f59e0b;
+}
+
+.shift-legend .shift-1 {
+  background-color: #dbeafe;
+  border-color: #3b82f6;
+}
+
+.shift-legend .shift-2 {
+  background-color: #e0e7ff;
+  border-color: #6366f1;
+}
+
+.shift-legend .shift-3 {
+  background-color: #f3e8ff;
+  border-color: #8b5cf6;
+}
+
+.constraint-button-prefer {
+  background-color: var(--color-green-100);
+  border-color: var(--color-green-300);
+  color: var(--color-green-700);
+  &:hover {
+    @media (hover: hover) {
+      background-color: var(--color-green-200);
+    }
+  }
+}
+.constraint-button-avoid {
+  background-color: var(--color-red-100);
+  border-color: var(--color-red-300);
+  color: var(--color-red-700);
+  &:hover {
+    @media (hover: hover) {
+      background-color: var(--color-red-200);
+    }
+  }
+}
+.constraint-button-null {
+  background-color: var(--color-gray-50);
+  border-color: var(--color-gray-200);
+  color: var(--color-gray-600);
+  &:hover {
+    @media (hover: hover) {
+      background-color: var(--color-gray-100);
+    }
+  }
+}

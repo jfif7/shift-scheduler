@@ -6,7 +6,7 @@ import {
   Constraint,
   ScheduleSettings,
 } from "@/types/schedule"
-import { FileSpreadsheet, FileImage, ChevronDown } from "lucide-react"
+import { FileSpreadsheet, FileImage, ChevronDown, Palette } from "lucide-react"
 import { exportScheduleAsCSV, exportScheduleAsImage } from "@/utils/exportUtils"
 import { toast } from "sonner"
 import { useState, useEffect, useRef } from "react"
@@ -17,6 +17,7 @@ import {
   getMonthName,
 } from "@/utils/dateUtils"
 import { ScheduleCell } from "./ScheduleCell"
+import { ShiftLegend } from "./ShiftLegend"
 
 interface ScheduleViewProps {
   schedule: Schedule
@@ -57,6 +58,7 @@ export const ScheduleView = ({
   isGenerating = false,
 }: ScheduleViewProps) => {
   const [showExportDropdown, setShowExportDropdown] = useState(false)
+  const [showShiftColors, setShowShiftColors] = useState(true)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const t = useTranslations()
 
@@ -223,6 +225,7 @@ export const ScheduleView = ({
           settings={settings}
           isLastInRow={isLastInRow}
           isInLastRow={isInLastRow}
+          showShiftColors={showShiftColors}
           onShiftClick={handleShiftClick}
           onDayClick={handleDayClick}
         />
@@ -262,6 +265,21 @@ export const ScheduleView = ({
                 {isGenerating
                   ? t("schedule.generating")
                   : t("schedule.generateButton")}
+              </Button>
+            )}
+            {settings.shiftsPerDay > 1 && (
+              <Button
+                variant={showShiftColors ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowShiftColors(!showShiftColors)}
+                className="flex items-center gap-2"
+                title={
+                  showShiftColors
+                    ? t("scheduleView.hideShiftColors")
+                    : t("scheduleView.showShiftColors")
+                }
+              >
+                <Palette className="w-4 h-4" />
               </Button>
             )}
             {Object.keys(schedule).length > 0 && (
@@ -307,6 +325,11 @@ export const ScheduleView = ({
 
         {hasActiveSchedule && (
           <div>
+            {/* Add shift legend above the calendar */}
+            {settings.shiftsPerDay > 1 && (
+              <ShiftLegend settings={settings} showColors={showShiftColors} />
+            )}
+
             <div className="border border-gray-200 rounded-lg overflow-hidden">
               <div className="grid grid-cols-7">
                 {[
