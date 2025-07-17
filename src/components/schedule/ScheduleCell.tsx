@@ -127,7 +127,7 @@ export const ScheduleCell = ({
               )}
 
               {/* Employee names grid */}
-              <div className="space-y-0.5 grid grid-cols-3 gap-0.5">
+              <div className="space-y-0.5 grid grid-cols-[repeat(auto-fit,minmax(60px,1fr))] gap-0.5">
                 {shiftEmployees.map((empId: string, idx: number) => {
                   const employee = employees.find((emp) => emp.id === empId)
                   const isCurrentSelectedEmployee = selectedEmployee === empId
