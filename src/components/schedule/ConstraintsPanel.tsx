@@ -215,23 +215,6 @@ export const ConstraintsPanel = ({
                 {t("constraints.preventMultipleShiftsPerDayDescription")}
               </p>
             </div>
-
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={settings.weekendCoverageRequired}
-                  onChange={(e) =>
-                    updateSetting("weekendCoverageRequired", e.target.checked)
-                  }
-                  className="rounded"
-                />
-                {t("constraints.weekendCoverageRequired")}
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                {t("constraints.weekendCoverageRequiredDescription")}
-              </p>
-            </div>
           </div>
         </div>
 
@@ -311,26 +294,38 @@ export const ConstraintsPanel = ({
             <div>
               <p>
                 <strong>{t("constraints.daily")}:</strong>{" "}
-                {settings.shiftsPerDay} {t("constraints.shifts")},{" "}
-                {settings.personsPerShift} {t("constraints.persons")}{" "}
-                {t("constraints.each")}
+                {t("constraints.dailySummary", {
+                  shiftsPerDay: settings.shiftsPerDay,
+                  personsPerShift: settings.personsPerShift.join(", "),
+                })}
               </p>
               <p>
                 <strong>{t("constraints.consecutive")}:</strong>{" "}
-                {t("constraints.max")} {settings.maxConsecutiveShifts}{" "}
-                {t("constraints.inARow")}
+                {t("constraints.consecutiveSummary", {
+                  maxShifts: settings.maxConsecutiveShifts,
+                  maxDays: settings.maxConsecutiveDays,
+                })}
               </p>
               <p>
                 <strong>{t("constraints.rest")}:</strong>{" "}
-                {settings.minRestDaysBetweenShifts}{" "}
-                {t("constraints.dayMinimum")}
+                {t("constraints.restSummary", {
+                  days: settings.minRestDaysBetweenShifts,
+                })}
+              </p>
+              <p>
+                <strong>{t("constraints.multipleShifts")}:</strong>{" "}
+                {settings.preventMultipleShiftsPerDay
+                  ? t("constraints.prevented")
+                  : t("constraints.allowed")}
               </p>
             </div>
             <div>
               <p>
                 <strong>{t("constraints.weekly")}:</strong>{" "}
-                {settings.minShiftsPerWeek}-{settings.maxShiftsPerWeek}{" "}
-                {t("constraints.shiftsPerPerson")}
+                {t("constraints.weeklySummary", {
+                  minShifts: settings.minShiftsPerWeek,
+                  maxShifts: settings.maxShiftsPerWeek,
+                })}
               </p>
               <p>
                 <strong>{t("constraints.distribution")}:</strong>{" "}

@@ -42,7 +42,6 @@ export interface ScheduleSettings {
   maxConsecutiveDays: number
   minRestDaysBetweenShifts: number
   preventMultipleShiftsPerDay: boolean
-  weekendCoverageRequired: boolean
   maxShiftsPerWeek: number
   minShiftsPerWeek: number
   evenDistribution: boolean

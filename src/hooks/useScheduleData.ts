@@ -16,7 +16,6 @@ const DEFAULT_SETTINGS: ScheduleSettings = {
   maxConsecutiveDays: 6,
   minRestDaysBetweenShifts: 0,
   preventMultipleShiftsPerDay: true,
-  weekendCoverageRequired: false,
   maxShiftsPerWeek: 7,
   minShiftsPerWeek: 0,
   evenDistribution: true,
