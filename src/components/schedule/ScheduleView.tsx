@@ -16,6 +16,7 @@ import {
   getFirstDayOfMonth,
   getMonthName,
 } from "@/utils/dateUtils"
+import { ScheduleCell } from "./ScheduleCell"
 
 interface ScheduleViewProps {
   schedule: Schedule
@@ -139,7 +140,7 @@ export const ScheduleView = ({
       (c) =>
         c.employeeId === selectedEmployee &&
         c.date === day &&
-        ("shiftIndex" in c ? c.shiftIndex === shiftIndex : false)
+        c.shiftIndex === shiftIndex
     )
 
     // 3-state cycle: normal → prefer → avoid → normal
@@ -188,11 +189,11 @@ export const ScheduleView = ({
     const firstDay = getFirstDayOfMonth(selectedMonth, selectedYear)
     const daysInMonth = getDaysInMonth(selectedMonth, selectedYear)
     const cells = []
+    const totalCells = firstDay + daysInMonth
 
     // Empty cells for days before month starts
     for (let i = 0; i < firstDay; i++) {
       const isLastInRow = (i + 1) % 7 === 0
-      const totalCells = firstDay + daysInMonth
       const isInLastRow = i >= Math.floor(totalCells / 7) * 7
 
       let emptyCellClass = "p-2 min-h-20 border-gray-200 "
@@ -206,190 +207,25 @@ export const ScheduleView = ({
     for (let day = 1; day <= daysInMonth; day++) {
       const daySchedule = schedule[day]
 
-      // Get all shift constraints for this day to determine overall day state
-      const shiftConstraints = selectedEmployee
-        ? constraints.filter(
-            (c) =>
-              c.employeeId === selectedEmployee &&
-              c.date === day &&
-              "shiftIndex" in c
-          )
-        : []
-
-      // Determine the overall day constraint state
-      let dayConstraintType: "prefer" | "avoid" | null = null
-      if (shiftConstraints.length > 0) {
-        // If all shifts have the same constraint type, show that as day constraint
-        const allPrefer = shiftConstraints.every((c) => c.type === "prefer")
-        const allAvoid = shiftConstraints.every((c) => c.type === "avoid")
-        if (allPrefer) dayConstraintType = "prefer"
-        else if (allAvoid) dayConstraintType = "avoid"
-      }
-
       // Calculate position for border logic
-      const totalCells = firstDay + daysInMonth
       const cellIndex = firstDay + day - 1
       const isLastInRow = (cellIndex + 1) % 7 === 0
       const isInLastRow = cellIndex >= Math.floor(totalCells / 7) * 7
 
-      let cellClass = "p-1 min-h-24 border-gray-200 "
-
-      // Add borders except for last column and last row
-      if (!isLastInRow) cellClass += "border-r "
-      if (!isInLastRow) cellClass += "border-b "
-
-      // Base styling for constraint interaction
-      if (selectedEmployee) {
-        cellClass += "transition-colors "
-      }
-
       cells.push(
-        <div key={day} className={cellClass}>
-          {/* Day number header */}
-          <div className="text-sm font-medium mb-1 flex justify-between items-center">
-            <span>{day}</span>
-            {selectedEmployee && dayConstraintType && (
-              <span
-                className={`text-xs px-1 rounded ${
-                  dayConstraintType === "prefer"
-                    ? "bg-green-200 text-green-800"
-                    : "bg-red-200 text-red-800"
-                }`}
-              >
-                Day {dayConstraintType === "prefer" ? "✓" : "✗"}
-              </span>
-            )}
-          </div>
-
-          {/* Shift containers */}
-          <div className="space-y-0.5">
-            {Array.from({ length: settings.shiftsPerDay }, (_, shiftIndex) => {
-              const shift = daySchedule?.shifts?.[shiftIndex]
-              const shiftEmployees = shift?.employeeIds || []
-              const shiftLabel =
-                settings.shiftLabels?.[shiftIndex] || `Shift ${shiftIndex + 1}`
-
-              // Find shift-specific constraint
-              const shiftConstraint = selectedEmployee
-                ? constraints.find(
-                    (c) =>
-                      c.employeeId === selectedEmployee &&
-                      c.date === day &&
-                      "shiftIndex" in c &&
-                      c.shiftIndex === shiftIndex
-                  )
-                : null
-
-              // Check if selected employee is in this specific shift
-              const isSelectedInThisShift =
-                selectedEmployee && shiftEmployees.includes(selectedEmployee)
-
-              let shiftClass =
-                "text-xs p-1 rounded border min-h-6 cursor-pointer transition-colors "
-
-              if (selectedEmployee) {
-                // Apply shift-specific constraint styling
-                if (isSelectedInThisShift) {
-                  if (shiftConstraint?.type === "prefer") {
-                    shiftClass +=
-                      "bg-green-200 hover:bg-green-300 border-green-400 text-green-800 "
-                  } else if (shiftConstraint?.type === "avoid") {
-                    shiftClass +=
-                      "bg-red-200 hover:bg-red-300 border-red-400 text-red-800 "
-                  } else {
-                    shiftClass +=
-                      "bg-blue-100 hover:bg-blue-200 border-blue-400 text-blue-800 "
-                  }
-                } else {
-                  // Constraint styling when employee is not scheduled
-                  if (shiftConstraint?.type === "prefer") {
-                    shiftClass +=
-                      "bg-green-50 hover:bg-green-100 border-green-200 text-green-700 "
-                  } else if (shiftConstraint?.type === "avoid") {
-                    shiftClass +=
-                      "bg-red-50 hover:bg-red-100 border-red-200 text-red-700 "
-                  } else {
-                    shiftClass += "hover:bg-blue-25 border-gray-200 "
-                  }
-                }
-              } else {
-                shiftClass += "border-gray-200 "
-              }
-
-              return (
-                <div
-                  key={`${day}-shift-${shiftIndex}`}
-                  className={shiftClass}
-                  onClick={() =>
-                    selectedEmployee && handleShiftClick(day, shiftIndex)
-                  }
-                  title={`${shiftLabel} - Click to set preference`}
-                >
-                  <div className="flex justify-between items-center mb-0.5">
-                    <span className="font-medium text-[10px] text-gray-600">
-                      {settings.shiftsPerDay > 1
-                        ? shiftLabel.split(" ")[1] || shiftLabel
-                        : ""}
-                    </span>
-                    {shiftConstraint && (
-                      <span
-                        className={`text-[8px] px-0.5 rounded ${
-                          shiftConstraint.type === "prefer"
-                            ? "bg-green-300 text-green-900"
-                            : "bg-red-300 text-red-900"
-                        }`}
-                      >
-                        {shiftConstraint.type === "prefer" ? "✓" : "✗"}
-                      </span>
-                    )}
-                  </div>
-                  <div className="space-y-0.5">
-                    {shiftEmployees.map((empId) => {
-                      const employee = employees.find((emp) => emp.id === empId)
-                      const isCurrentSelectedEmployee =
-                        selectedEmployee === empId
-                      return (
-                        <div
-                          key={`${empId}-${day}-${shiftIndex}`}
-                          className={`text-[10px] truncate ${
-                            isCurrentSelectedEmployee ? "font-bold" : ""
-                          }`}
-                          title={employee?.name}
-                        >
-                          {employee?.name}
-                        </div>
-                      )
-                    })}
-                    {shiftEmployees.length === 0 && (
-                      <div className="text-[10px] text-gray-400 italic">
-                        Unassigned
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Day-level constraint button for multi-shift days */}
-          {selectedEmployee && settings.shiftsPerDay > 1 && (
-            <button
-              onClick={() => handleDayClick(day)}
-              className={`mt-1 w-full text-[10px] py-0.5 px-1 rounded border transition-colors ${
-                dayConstraintType === "prefer"
-                  ? "bg-green-100 border-green-300 text-green-700 hover:bg-green-200"
-                  : dayConstraintType === "avoid"
-                  ? "bg-red-100 border-red-300 text-red-700 hover:bg-red-200"
-                  : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
-              }`}
-              title="Set preference for all shifts on this day"
-            >
-              {dayConstraintType
-                ? `All shifts: ${dayConstraintType}`
-                : "Set all shifts"}
-            </button>
-          )}
-        </div>
+        <ScheduleCell
+          key={day}
+          day={day}
+          daySchedule={daySchedule}
+          employees={employees}
+          constraints={constraints}
+          selectedEmployee={selectedEmployee}
+          settings={settings}
+          isLastInRow={isLastInRow}
+          isInLastRow={isInLastRow}
+          onShiftClick={handleShiftClick}
+          onDayClick={handleDayClick}
+        />
       )
     }
 
