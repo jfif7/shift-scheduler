@@ -325,11 +325,6 @@ export const ScheduleView = ({
 
         {hasActiveSchedule && (
           <div>
-            {/* Add shift legend above the calendar */}
-            {settings.shiftsPerDay > 1 && (
-              <ShiftLegend settings={settings} showColors={showShiftColors} />
-            )}
-
             <div className="border border-gray-200 rounded-lg overflow-hidden">
               <div className="grid grid-cols-7">
                 {[
@@ -351,49 +346,6 @@ export const ScheduleView = ({
                 {renderScheduleGrid()}
               </div>
             </div>
-
-            {selectedEmployee && (
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                <div className="text-sm font-medium text-blue-800 mb-2">
-                  {settings.shiftsPerDay > 1
-                    ? t("shiftPreferences.clickShiftToSet")
-                    : t("schedule.clickToSetPreferences")}
-                </div>
-                <div className="space-y-1 text-xs">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
-                    <span>
-                      {settings.shiftsPerDay > 1
-                        ? t("shiftPreferences.preferredShifts")
-                        : t("schedule.preferredDays")}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-red-100 border border-red-300 rounded"></div>
-                    <span>
-                      {settings.shiftsPerDay > 1
-                        ? t("shiftPreferences.avoidShifts")
-                        : t("schedule.avoidDays")}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-white border border-gray-300 rounded"></div>
-                    <span>
-                      {settings.shiftsPerDay > 1
-                        ? t("shiftPreferences.normalShifts")
-                        : t("schedule.normalDays")}
-                    </span>
-                  </div>
-                  {settings.shiftsPerDay > 1 && (
-                    <div className="mt-2 pt-2 border-t border-blue-200">
-                      <div className="text-xs text-blue-700">
-                        {t("shiftPreferences.shiftSpecific")}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </CardContent>
