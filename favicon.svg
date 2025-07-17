@@ -1,0 +1,10 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Calendar background -->
+  <rect x="2" y="4" width="28" height="26" rx="2" fill="#ffffff" stroke="#1d4ed8" stroke-width="0.8"/>
+  
+  <!-- Date number in center with bold 3D style -->
+  <text x="16" y="20" font-family="Arial Black, sans-serif" font-size="14" font-weight="900" fill="#1d4ed8" text-anchor="middle" style="paint-order: stroke; stroke: #ffffff; stroke-width: 1px; stroke-linejoin: round;">17</text>
+  
+  <!-- Chinese text "宜上班" at bottom -->
+  <text x="16" y="28" font-family="Arial, sans-serif" font-size="5" font-weight="bold" fill="#1d4ed8" text-anchor="middle">宜上班</text>
+</svg>
