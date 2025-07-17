@@ -13,10 +13,12 @@ const DEFAULT_SETTINGS: ScheduleSettings = {
   shiftsPerDay: 1,
   personsPerShift: [1], // Array format for compatibility
   maxConsecutiveShifts: 3,
+  maxConsecutiveDays: 6,
   minRestDaysBetweenShifts: 0,
-  weekendCoverageRequired: true,
-  maxShiftsPerWeek: 5,
-  minShiftsPerWeek: 1,
+  preventMultipleShiftsPerDay: true,
+  weekendCoverageRequired: false,
+  maxShiftsPerWeek: 7,
+  minShiftsPerWeek: 0,
   evenDistribution: true,
   shiftLabels: ["Shift 1"],
 }

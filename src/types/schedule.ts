@@ -39,7 +39,9 @@ export interface ScheduleSettings {
   shiftsPerDay: number
   personsPerShift: number[] // Array to support different staffing per shift
   maxConsecutiveShifts: number
+  maxConsecutiveDays: number
   minRestDaysBetweenShifts: number
+  preventMultipleShiftsPerDay: boolean
   weekendCoverageRequired: boolean
   maxShiftsPerWeek: number
   minShiftsPerWeek: number

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { NumberInput } from "@/components/ui/number-input"
 import { ScheduleSettings } from "@/types/schedule"
 import { useTranslations } from "next-intl"
 
@@ -22,6 +23,27 @@ export const ConstraintsPanel = ({
     onSettingsChange({ ...settings, [key]: value })
   }
 
+  const handleShiftsPerDayChange = (newShiftsPerDay: number) => {
+    // Ensure personsPerShift array matches shiftsPerDay length
+    const newPersonsPerShift = Array.from(
+      { length: newShiftsPerDay },
+      (_, i) => settings.personsPerShift[i] || 1
+    )
+    // Ensure shiftLabels array matches shiftsPerDay length
+    const newShiftLabels = Array.from(
+      { length: newShiftsPerDay },
+      (_, i) => settings.shiftLabels?.[i] || `Shift ${i + 1}`
+    )
+
+    // Batch all updates into a single call
+    onSettingsChange({
+      ...settings,
+      shiftsPerDay: newShiftsPerDay,
+      personsPerShift: newPersonsPerShift,
+      shiftLabels: newShiftLabels,
+    })
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -37,33 +59,13 @@ export const ConstraintsPanel = ({
             <Label htmlFor="shiftsPerDay">
               {t("constraints.shiftsPerDay")}
             </Label>
-            <Input
+            <NumberInput
               id="shiftsPerDay"
-              type="number"
-              min="1"
-              max="3"
               value={settings.shiftsPerDay}
-              onChange={(e) => {
-                const newShiftsPerDay = Number.parseInt(e.target.value) || 1
-                // Ensure personsPerShift array matches shiftsPerDay length
-                const newPersonsPerShift = Array.from(
-                  { length: newShiftsPerDay },
-                  (_, i) => settings.personsPerShift[i] || 1
-                )
-                // Ensure shiftLabels array matches shiftsPerDay length
-                const newShiftLabels = Array.from(
-                  { length: newShiftsPerDay },
-                  (_, i) => settings.shiftLabels?.[i] || `Shift ${i + 1}`
-                )
-
-                // Batch all updates into a single call
-                onSettingsChange({
-                  ...settings,
-                  shiftsPerDay: newShiftsPerDay,
-                  personsPerShift: newPersonsPerShift,
-                  shiftLabels: newShiftLabels,
-                })
-              }}
+              onChange={handleShiftsPerDayChange}
+              min={1}
+              max={3}
+              defaultValue={1}
             />
             <p className="text-xs text-muted-foreground">
               {t("constraints.shiftsPerDayDescription")}
@@ -79,17 +81,16 @@ export const ConstraintsPanel = ({
                     `Shift ${shiftIndex + 1}`}
                   :
                 </Label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="10"
+                <NumberInput
                   value={persons}
-                  onChange={(e) => {
+                  onChange={(value) => {
                     const newPersonsPerShift = [...settings.personsPerShift]
-                    newPersonsPerShift[shiftIndex] =
-                      Number.parseInt(e.target.value) || 1
+                    newPersonsPerShift[shiftIndex] = value
                     updateSetting("personsPerShift", newPersonsPerShift)
                   }}
+                  min={1}
+                  max={10}
+                  defaultValue={1}
                   className="w-20"
                 />
               </div>
@@ -106,15 +107,21 @@ export const ConstraintsPanel = ({
               {settings.shiftLabels?.map((label, shiftIndex) => (
                 <div key={shiftIndex} className="flex gap-2 items-center">
                   <Label className="text-sm w-20">
-                    {t("shiftPreferences.shiftLabel", { index: shiftIndex + 1 })}:
+                    {t("shiftPreferences.shiftLabel", {
+                      index: shiftIndex + 1,
+                    })}
+                    :
                   </Label>
                   <Input
                     type="text"
                     value={label}
-                    placeholder={t("settings.shiftLabelPlaceholder", { index: shiftIndex + 1 })}
+                    placeholder={t("settings.shiftLabelPlaceholder", {
+                      index: shiftIndex + 1,
+                    })}
                     onChange={(e) => {
                       const newShiftLabels = [...(settings.shiftLabels || [])]
-                      newShiftLabels[shiftIndex] = e.target.value || `Shift ${shiftIndex + 1}`
+                      newShiftLabels[shiftIndex] =
+                        e.target.value || `Shift ${shiftIndex + 1}`
                       updateSetting("shiftLabels", newShiftLabels)
                     }}
                     className="flex-1"
@@ -126,28 +133,6 @@ export const ConstraintsPanel = ({
               </p>
             </div>
           )}
-
-          <div className="space-y-2">
-            <Label htmlFor="maxConsecutive">
-              {t("constraints.maxConsecutiveShifts")}
-            </Label>
-            <Input
-              id="maxConsecutive"
-              type="number"
-              min="1"
-              max="7"
-              value={settings.maxConsecutiveShifts}
-              onChange={(e) =>
-                updateSetting(
-                  "maxConsecutiveShifts",
-                  Number.parseInt(e.target.value) || 1
-                )
-              }
-            />
-            <p className="text-xs text-muted-foreground">
-              {t("constraints.maxConsecutiveShiftsDescription")}
-            </p>
-          </div>
         </div>
 
         {/* Rest and Recovery */}
@@ -157,24 +142,77 @@ export const ConstraintsPanel = ({
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
+              <Label htmlFor="maxConsecutive">
+                {t("constraints.maxConsecutiveShifts")}
+              </Label>
+              <NumberInput
+                id="maxConsecutive"
+                value={settings.maxConsecutiveShifts}
+                onChange={(value) =>
+                  updateSetting("maxConsecutiveShifts", value)
+                }
+                min={1}
+                max={7}
+                defaultValue={1}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("constraints.maxConsecutiveShiftsDescription")}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="maxConsecutiveDays">
+                {t("constraints.maxConsecutiveDays")}
+              </Label>
+              <NumberInput
+                id="maxConsecutiveDays"
+                value={settings.maxConsecutiveDays}
+                onChange={(value) => updateSetting("maxConsecutiveDays", value)}
+                min={1}
+                max={7}
+                defaultValue={3}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("constraints.maxConsecutiveDaysDescription")}
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="minRestDays">
                 {t("constraints.minRestDaysBetweenShifts")}
               </Label>
-              <Input
+              <NumberInput
                 id="minRestDays"
-                type="number"
-                min="0"
-                max="3"
                 value={settings.minRestDaysBetweenShifts}
-                onChange={(e) =>
-                  updateSetting(
-                    "minRestDaysBetweenShifts",
-                    Number.parseInt(e.target.value) || 0
-                  )
+                onChange={(value) =>
+                  updateSetting("minRestDaysBetweenShifts", value)
                 }
+                min={0}
+                max={3}
+                defaultValue={0}
               />
               <p className="text-xs text-muted-foreground">
                 {t("constraints.minRestDaysBetweenShiftsDescription")}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={settings.preventMultipleShiftsPerDay}
+                  onChange={(e) =>
+                    updateSetting(
+                      "preventMultipleShiftsPerDay",
+                      e.target.checked
+                    )
+                  }
+                  className="rounded"
+                />
+                {t("constraints.preventMultipleShiftsPerDay")}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t("constraints.preventMultipleShiftsPerDayDescription")}
               </p>
             </div>
 
@@ -207,18 +245,13 @@ export const ConstraintsPanel = ({
               <Label htmlFor="minShiftsPerWeek">
                 {t("constraints.minShiftsPerWeek")}
               </Label>
-              <Input
+              <NumberInput
                 id="minShiftsPerWeek"
-                type="number"
-                min="0"
-                max="7"
                 value={settings.minShiftsPerWeek}
-                onChange={(e) =>
-                  updateSetting(
-                    "minShiftsPerWeek",
-                    Number.parseInt(e.target.value) || 0
-                  )
-                }
+                onChange={(value) => updateSetting("minShiftsPerWeek", value)}
+                min={0}
+                max={7}
+                defaultValue={0}
               />
               <p className="text-xs text-muted-foreground">
                 {t("constraints.minShiftsPerWeekDescription")}
@@ -229,18 +262,13 @@ export const ConstraintsPanel = ({
               <Label htmlFor="maxShiftsPerWeek">
                 {t("constraints.maxShiftsPerWeek")}
               </Label>
-              <Input
+              <NumberInput
                 id="maxShiftsPerWeek"
-                type="number"
-                min="1"
-                max="7"
                 value={settings.maxShiftsPerWeek}
-                onChange={(e) =>
-                  updateSetting(
-                    "maxShiftsPerWeek",
-                    Number.parseInt(e.target.value) || 1
-                  )
-                }
+                onChange={(value) => updateSetting("maxShiftsPerWeek", value)}
+                min={1}
+                max={7}
+                defaultValue={1}
               />
               <p className="text-xs text-muted-foreground">
                 {t("constraints.maxShiftsPerWeekDescription")}
@@ -303,12 +331,6 @@ export const ConstraintsPanel = ({
                 <strong>{t("constraints.weekly")}:</strong>{" "}
                 {settings.minShiftsPerWeek}-{settings.maxShiftsPerWeek}{" "}
                 {t("constraints.shiftsPerPerson")}
-              </p>
-              <p>
-                <strong>{t("constraints.weekend")}:</strong>{" "}
-                {settings.weekendCoverageRequired
-                  ? t("constraints.required")
-                  : t("constraints.optional")}
               </p>
               <p>
                 <strong>{t("constraints.distribution")}:</strong>{" "}
