@@ -296,7 +296,9 @@ export const ConstraintsPanel = ({
                 <strong>{t("constraints.daily")}:</strong>{" "}
                 {t("constraints.dailySummary", {
                   shiftsPerDay: settings.shiftsPerDay,
-                  personsPerShift: settings.personsPerShift.join(", "),
+                  personsPerShift: settings.personsPerShift.join(
+                    t("constraints.separator")
+                  ),
                 })}
               </p>
               <p>

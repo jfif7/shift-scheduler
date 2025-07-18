@@ -125,6 +125,7 @@
         "constraintSummary": "Constraint Summary",
         "daily": "Daily",
         "dailySummary": "{shiftsPerDay} shift(s), {personsPerShift} person(s) per shift",
+        "separator": ", ",
         "consecutive": "Consecutive",
         "consecutiveSummary": "Max {maxShifts} shifts in a row, {maxDays} days max",
         "rest": "Rest",
