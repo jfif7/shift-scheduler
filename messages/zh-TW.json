@@ -124,7 +124,7 @@
         "evenShiftDistributionDescription": "嘗試在所有員工之間均勻分配平假日班次以確保公平性",
         "constraintSummary": "條件摘要",
         "daily": "每日",
-        "dailySummary": "{shiftsPerDay} 班次，每班 {personsPerShift}個人",
+        "dailySummary": "{shiftsPerDay} 班次，每班 {personsPerShift} 個人",
         "separator": " 個，",
         "consecutive": "連續",
         "consecutiveSummary": "最多連續工作 {maxShifts} 班，最多連續工作 {maxDays} 天",
