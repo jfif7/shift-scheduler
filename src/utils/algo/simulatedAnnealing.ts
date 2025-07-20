@@ -3,10 +3,10 @@ import {
   Constraint,
   Schedule,
   ScheduleSettings,
-  OptimizedSchedule,
+  OptimizedScheduleSA,
   getTotalSlotsNeeded,
 } from "@/types/schedule"
-import { getDaysInMonth, isWeekend } from "./dateUtils"
+import { getDaysInMonth, isWeekend } from "../dateUtils"
 import simulatedAnnealing from "simulated-annealing"
 
 // Helper function to generate random integer from [0, x)
@@ -16,7 +16,7 @@ const randint = (x: number): number => {
 
 // Conversion functions between Schedule and OptimizedSchedule
 const optimizedToSchedule = (
-  optimized: OptimizedSchedule,
+  optimized: OptimizedScheduleSA,
   employees: Employee[],
   settings: ScheduleSettings,
   daysInMonth: number
@@ -59,8 +59,10 @@ const optimizedToSchedule = (
 }
 
 // Generate initial schedule by assigning employees their maximum shifts
-const generateInitialSchedule = (employees: Employee[]): OptimizedSchedule => {
-  const optimized: OptimizedSchedule = []
+const generateInitialSchedule = (
+  employees: Employee[]
+): OptimizedScheduleSA => {
+  const optimized: OptimizedScheduleSA = []
 
   employees.forEach((emp, empIndex) => {
     for (let i = 0; i < emp.shiftsPerMonth[1]; i++) {
@@ -79,7 +81,7 @@ const generateInitialSchedule = (employees: Employee[]): OptimizedSchedule => {
 
 // Cost function to evaluate optimized schedule quality
 const calcCost = (
-  optimized: OptimizedSchedule,
+  optimized: OptimizedScheduleSA,
   employees: Employee[],
   constraints: Constraint[],
   settings: ScheduleSettings,
@@ -92,17 +94,18 @@ const calcCost = (
 
   // Penalty weights
   const PENALTY = {
-    AVOID_VIOLATION: 1000,
+    AVOID_VIOLATION: 2000,
     DUPLICATE_PERSON_IN_SHIFT: 2000,
     CONSECUTIVE: 100,
     WEEKLY_LIMIT: 100,
     UNEVEN_DISTRIBUTION: 50,
-    MISSED_PREFERENCE: 10,
+    MISSED_PREFERENCE: 100,
     REST_DAYS: 80,
     HOLIDAY_DISTRIBUTION: 1000,
     WEEKEND_CONSECUTIVE: 50,
-    MIN_SHIFTS: 200,
-    MAX_SHIFTS: 200,
+    TOTAL_SHIFT_COUNT: 2000,
+    WEEKEND_SHIFTS_PREFERENCE: 150,
+    WEEKDAY_SHIFTS_PREFERENCE: 150,
   } as const
 
   // Track employee metrics
@@ -300,33 +303,45 @@ const calcCost = (
     cost += penalty
   })
 
-  // Check weekly limits and rest days
+  // Track all work days for each employee across the entire month
+  const employeeWorkDaysForRest = employees.map(() => [] as number[])
+
+  // Collect all work days for each employee
+  for (let day = 0; day < daysInMonth; day++) {
+    const dayRange = getDaySlotRange(day + 1, settings) // Convert to 1-based day
+
+    employees.forEach((emp, empIndex) => {
+      let workedThisDay = false
+
+      for (
+        let slotIndex = dayRange.start;
+        slotIndex < dayRange.end && slotIndex < activeSlots.length;
+        slotIndex++
+      ) {
+        if (activeSlots[slotIndex] === empIndex) {
+          workedThisDay = true
+          break
+        }
+      }
+
+      if (workedThisDay) {
+        employeeWorkDaysForRest[empIndex].push(day)
+      }
+    })
+  }
+
+  // Check weekly limits and rest days across entire month
   for (let week = 0; week < Math.ceil(daysInMonth / 7); week++) {
     const weekStart = week * 7
     const weekEnd = Math.min(weekStart + 6, daysInMonth - 1)
 
     employees.forEach((emp, empIndex) => {
       let weeklyShifts = 0
-      const workDays: number[] = []
 
+      // Count shifts for this week only
       for (let day = weekStart; day <= weekEnd; day++) {
-        const dayRange = getDaySlotRange(day + 1, settings) // Convert to 1-based day
-        let workedThisDay = false
-
-        for (
-          let slotIndex = dayRange.start;
-          slotIndex < dayRange.end && slotIndex < activeSlots.length;
-          slotIndex++
-        ) {
-          if (activeSlots[slotIndex] === empIndex) {
-            workedThisDay = true
-            break
-          }
-        }
-
-        if (workedThisDay) {
+        if (employeeWorkDaysForRest[empIndex].includes(day)) {
           weeklyShifts++
-          workDays.push(day)
         }
       }
 
@@ -335,18 +350,21 @@ const calcCost = (
         cost +=
           (weeklyShifts - settings.maxShiftsPerWeek) * PENALTY.WEEKLY_LIMIT
       }
-
-      // Rest days penalty
-      for (let i = 0; i < workDays.length - 1; i++) {
-        const daysBetween = workDays[i + 1] - workDays[i] - 1
-        if (daysBetween < settings.minRestDaysBetweenShifts) {
-          cost +=
-            (settings.minRestDaysBetweenShifts - daysBetween) *
-            PENALTY.REST_DAYS
-        }
-      }
     })
   }
+
+  // Rest days penalty - check across entire month for each employee
+  employees.forEach((emp, empIndex) => {
+    const workDays = employeeWorkDaysForRest[empIndex].sort((a, b) => a - b)
+
+    for (let i = 0; i < workDays.length - 1; i++) {
+      const daysBetween = workDays[i + 1] - workDays[i] - 1
+      if (daysBetween < settings.minRestDaysBetweenShifts) {
+        cost +=
+          (settings.minRestDaysBetweenShifts - daysBetween) * PENALTY.REST_DAYS
+      }
+    }
+  })
 
   // Min/Max shifts per employee penalty
   employees.forEach((employee, empIndex) => {
@@ -354,12 +372,48 @@ const calcCost = (
 
     // Penalize if below minimum
     if (shiftsAssigned < employee.shiftsPerMonth[0]) {
-      cost += (employee.shiftsPerMonth[0] - shiftsAssigned) * PENALTY.MIN_SHIFTS
+      cost +=
+        (employee.shiftsPerMonth[0] - shiftsAssigned) *
+        PENALTY.TOTAL_SHIFT_COUNT
     }
 
     // Penalize if above maximum
     if (shiftsAssigned > employee.shiftsPerMonth[1]) {
-      cost += (shiftsAssigned - employee.shiftsPerMonth[1]) * PENALTY.MAX_SHIFTS
+      cost +=
+        (shiftsAssigned - employee.shiftsPerMonth[1]) *
+        PENALTY.TOTAL_SHIFT_COUNT
+    }
+
+    // Weekend/Weekday shift preference penalty
+    const weekendShiftsAssigned = employeeHolidayShifts[empIndex]
+    const weekdayShiftsAssigned = employeeWeekdayShifts[empIndex]
+
+    // Penalize if weekend shifts are below minimum preference
+    if (weekendShiftsAssigned < employee.weekendShifts[0]) {
+      cost +=
+        (employee.weekendShifts[0] - weekendShiftsAssigned) *
+        PENALTY.WEEKEND_SHIFTS_PREFERENCE
+    }
+
+    // Penalize if weekend shifts are above maximum preference
+    if (weekendShiftsAssigned > employee.weekendShifts[1]) {
+      cost +=
+        (weekendShiftsAssigned - employee.weekendShifts[1]) *
+        PENALTY.WEEKEND_SHIFTS_PREFERENCE
+    }
+
+    // Penalize if weekday shifts are below minimum preference
+    if (weekdayShiftsAssigned < employee.weekdayShifts[0]) {
+      cost +=
+        (employee.weekdayShifts[0] - weekdayShiftsAssigned) *
+        PENALTY.WEEKDAY_SHIFTS_PREFERENCE
+    }
+
+    // Penalize if weekday shifts are above maximum preference
+    if (weekdayShiftsAssigned > employee.weekdayShifts[1]) {
+      cost +=
+        (weekdayShiftsAssigned - employee.weekdayShifts[1]) *
+        PENALTY.WEEKDAY_SHIFTS_PREFERENCE
     }
   })
 
@@ -453,9 +507,9 @@ const getShiftSlotRange = (
 }
 
 // Generate a neighbor solution by making permutations of the optimized schedule
-const generateOptimizedNeighbor = (
-  currentOptimized: OptimizedSchedule
-): OptimizedSchedule => {
+const generateNeighbor = (
+  currentOptimized: OptimizedScheduleSA
+): OptimizedScheduleSA => {
   const newOptimized = [...currentOptimized]
 
   if (newOptimized.length < 2) return newOptimized
@@ -564,13 +618,13 @@ export const generateSchedule = (
   // Configure simulated annealing with optimized schedule
   const tempMax = 1000
   const tempMin = 0.1
-  const coolingRate = 0.99
+  const coolingRate = 0.999
 
   // Temperature function
   const getTemp = (previousTemp: number) => previousTemp * coolingRate
 
   // Energy function using optimized schedule
-  const getEnergy = (optimized: OptimizedSchedule) =>
+  const getEnergy = (optimized: OptimizedScheduleSA) =>
     calcCost(
       optimized,
       employees,
@@ -582,8 +636,8 @@ export const generateSchedule = (
     )
 
   // New state function using optimized schedule
-  const newState = (currentState: OptimizedSchedule) =>
-    generateOptimizedNeighbor(currentState)
+  const newState = (currentState: OptimizedScheduleSA) =>
+    generateNeighbor(currentState)
 
   try {
     // Run simulated annealing with optimized schedule

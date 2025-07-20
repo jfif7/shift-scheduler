@@ -33,7 +33,10 @@ export interface Schedule {
 // Single array where each element is an employee index
 // Can be longer than needed - only the first daysInMonth * shiftsPerDay * personsPerShift slots are used
 // when converting back to Schedule. The extra slots allow for easier permutation-based neighbor generation.
-export type OptimizedSchedule = number[]
+export type OptimizedScheduleSA = number[]
+
+// schedule[shift][emp] = boolean
+export type OptimizedScheduleGenetic = boolean[][]
 
 export interface ScheduleSettings {
   shiftsPerDay: number

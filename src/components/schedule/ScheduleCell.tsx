@@ -136,7 +136,7 @@ export const ScheduleCell = ({
                     <div
                       key={`${empId}-${day}-${shiftIndex}-${idx}`}
                       className={cn(
-                        "text-[10px] truncate",
+                        "text-[12px] truncate",
                         isCurrentSelectedEmployee
                           ? "font-bold ring-1 ring-blue-400"
                           : ""
