@@ -194,5 +194,12 @@
         "setAllShifts_prefer": "All shifts: prefer",
         "setAllShifts_avoid": "All shifts: avoid",
         "setAllShiftsDescription": "Set preference for all shifts on this day"
+    },
+    "dataManagement": {
+        "title": "Data Management",
+        "clearAllData": "Clear All Data",
+        "clearAllDataDescription": "This will permanently delete all schedules, employees, settings, and preferences stored in your browser. This action cannot be undone.",
+        "clearAllDataConfirm": "Are you sure you want to clear all data? This action cannot be undone.",
+        "dataCleared": "All data has been cleared successfully"
     }
 }

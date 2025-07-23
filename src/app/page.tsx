@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
+  Trash2,
 } from "lucide-react"
 import { ScheduleHistory } from "@/components/schedule/ScheduleHistory"
 import { EmployeeManager } from "@/components/schedule/EmployeeManager"
@@ -23,6 +24,7 @@ import { useScheduleGeneration } from "@/hooks/useScheduleGeneration"
 import { useCollapsibleLayout } from "@/hooks/useCollapsibleLayout"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 export default function ScheduleManager() {
   const t = useTranslations()
@@ -97,6 +99,21 @@ export default function ScheduleManager() {
     )
   }
 
+  const handleClearAllData = () => {
+    const confirmed = window.confirm(t("dataManagement.clearAllDataConfirm"))
+    if (confirmed) {
+      // Clear all localStorage data
+      localStorage.removeItem("scheduleData")
+      localStorage.removeItem("locale")
+      
+      // Show success message
+      toast.success(t("dataManagement.dataCleared"))
+      
+      // Reload the page to reset all state
+      window.location.reload()
+    }
+  }
+
   return (
     <div>
       <Tabs defaultValue="about" className="space-y-0">
@@ -133,6 +150,29 @@ export default function ScheduleManager() {
                 <p className="text-lg text-muted-foreground leading-relaxed">
                   {t("page.description")}
                 </p>
+              </div>
+              
+              <div className="border-t pt-6">
+                <div className="max-w-2xl mx-auto">
+                  <h2 className="text-2xl font-semibold mb-4 text-center">
+                    {t("dataManagement.title")}
+                  </h2>
+                  <div className="bg-muted/50 rounded-lg p-6 space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      {t("dataManagement.clearAllDataDescription")}
+                    </p>
+                    <div className="flex justify-center">
+                      <Button
+                        variant="destructive"
+                        onClick={handleClearAllData}
+                        className="flex items-center gap-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        {t("dataManagement.clearAllData")}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
