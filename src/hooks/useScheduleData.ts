@@ -20,6 +20,7 @@ const DEFAULT_SETTINGS: ScheduleSettings = {
   minShiftsPerWeek: 0,
   evenDistribution: true,
   shiftLabels: ["Shift 1"],
+  preferredAlgorithm: "auto"
 }
 
 export const useScheduleData = () => {

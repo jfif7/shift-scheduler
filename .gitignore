@@ -4,3 +4,8 @@ node_modules
 public/
 dist/
 tsconfig.tsbuildinfo
+__pycache__
+
+.env.local
+.env
+.env.production

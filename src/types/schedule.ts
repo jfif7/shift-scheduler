@@ -49,6 +49,7 @@ export interface ScheduleSettings {
   minShiftsPerWeek: number
   evenDistribution: boolean
   shiftLabels?: string[] // Optional shift naming/labeling
+  preferredAlgorithm: "auto" | "cp-sat" | "genetic" | "simulated-annealing" // Algorithm preference
 }
 
 export interface ScheduleItem {

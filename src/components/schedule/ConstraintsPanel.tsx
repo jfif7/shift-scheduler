@@ -2,8 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { NumberInput } from "@/components/ui/number-input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScheduleSettings } from "@/types/schedule"
 import { useTranslations } from "next-intl"
+import { ServerStatus } from "./ServerStatus"
 
 interface ConstraintsPanelProps {
   settings: ScheduleSettings
@@ -335,6 +337,40 @@ export const ConstraintsPanel = ({
                   ? t("constraints.even")
                   : t("constraints.flexible")}
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Algorithm Selection */}
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-medium mb-4">Scheduling Algorithm</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="preferredAlgorithm">Preferred Algorithm</Label>
+              <Select
+                value={settings.preferredAlgorithm}
+                onValueChange={(value) => updateSetting("preferredAlgorithm", value as "auto" | "cp-sat" | "genetic" | "simulated-annealing")}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select algorithm" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">Auto (Recommended)</SelectItem>
+                  <SelectItem value="cp-sat">CP-SAT Solver (Best Quality)</SelectItem>
+                  <SelectItem value="genetic">Genetic Algorithm (Fast)</SelectItem>
+                  <SelectItem value="simulated-annealing">Simulated Annealing (Simple)</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p><strong>Auto:</strong> Uses CP-SAT if available, falls back to genetic/simulated annealing</p>
+                <p><strong>CP-SAT:</strong> Google&apos;s constraint programming solver - highest quality results</p>
+                <p><strong>Genetic:</strong> Good for complex multi-shift schedules</p>
+                <p><strong>Simulated Annealing:</strong> Simple algorithm for basic single-shift schedules</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Server Status</Label>
+              <ServerStatus showDetails={true} />
             </div>
           </div>
         </div>

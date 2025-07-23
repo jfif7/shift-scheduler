@@ -17,6 +17,7 @@ import {
   getMonthName,
 } from "@/utils/dateUtils"
 import { ScheduleCell } from "./ScheduleCell"
+import { ServerStatus } from "./ServerStatus"
 import { cn } from "@/lib/utils"
 
 interface ScheduleViewProps {
@@ -269,6 +270,7 @@ export const ScheduleView = ({
                   : t("schedule.generateButton")}
               </Button>
             )}
+            <ServerStatus />
             {settings.shiftsPerDay > 1 && (
               <Button
                 variant={showShiftColors ? "default" : "outline"}
