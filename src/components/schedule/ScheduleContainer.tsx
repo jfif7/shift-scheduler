@@ -6,22 +6,19 @@ import {
   Constraint,
   ScheduleSettings,
 } from "@/types/schedule"
-import { FileSpreadsheet, FileImage, ChevronDown, Palette } from "lucide-react"
+import { ScheduleViewType, VIEW_CONFIGURATIONS } from "@/types/viewTypes"
 import { exportScheduleAsCSV, exportScheduleAsImage } from "@/utils/exportUtils"
 import { toast } from "sonner"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
-import {
-  getDaysInMonth,
-  getFirstDayOfMonth,
-  getMonthName,
-} from "@/utils/dateUtils"
-import { ScheduleCell } from "./ScheduleCell"
+import { getMonthName } from "@/utils/dateUtils"
+import { ViewSelector } from "./ViewSelector"
+import { ViewToolbar } from "./ViewToolbar"
+import { ViewRenderer } from "./ViewRenderer"
 import { ShiftLegend } from "./ShiftLegend"
 import { ServerStatus } from "./ServerStatus"
-import { cn } from "@/lib/utils"
 
-interface ScheduleViewProps {
+interface ScheduleContainerProps {
   schedule: Schedule
   employees: Employee[]
   selectedMonth: number
@@ -46,7 +43,7 @@ interface ScheduleViewProps {
   isGenerating?: boolean
 }
 
-export const ScheduleView = ({
+export const ScheduleContainer = ({
   schedule,
   employees,
   selectedMonth,
@@ -60,27 +57,27 @@ export const ScheduleView = ({
   onToggleAllShifts,
   onGenerateSchedule,
   isGenerating = false,
-}: ScheduleViewProps) => {
-  const [showExportDropdown, setShowExportDropdown] = useState(false)
+}: ScheduleContainerProps) => {
+  const [currentView, setCurrentView] = useState<ScheduleViewType>("calendar")
   const [showShiftColors, setShowShiftColors] = useState(true)
-  const dropdownRef = useRef<HTMLDivElement>(null)
   const t = useTranslations()
 
+  // Load view preference from localStorage
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowExportDropdown(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
+    const savedView = localStorage.getItem("schedule-view-preference")
+    if (
+      savedView &&
+      (savedView === "calendar" || savedView === "spreadsheet")
+    ) {
+      setCurrentView(savedView as ScheduleViewType)
     }
   }, [])
+
+  // Save view preference to localStorage
+  const handleViewChange = (view: ScheduleViewType) => {
+    setCurrentView(view)
+    localStorage.setItem("schedule-view-preference", view)
+  }
 
   const handleExportCSV = () => {
     if (Object.keys(schedule).length === 0) {
@@ -107,7 +104,6 @@ export const ScheduleView = ({
         description: t("toast.csvExportFailedDescription"),
       })
     }
-    setShowExportDropdown(false)
   }
 
   const handleExportImage = () => {
@@ -135,7 +131,6 @@ export const ScheduleView = ({
         description: t("toast.imageExportFailedDescription"),
       })
     }
-    setShowExportDropdown(false)
   }
 
   const handleShiftClick = (day: number, shiftIndex: number) => {
@@ -151,13 +146,13 @@ export const ScheduleView = ({
 
     // 3-state cycle: normal → prefer → avoid → normal
     if (!existingConstraint) {
-      // Currently normal → change to prefer
+      // Currently normal → change to avoid
       onSetConstraint(selectedEmployee, "avoid", day, shiftIndex)
     } else if (existingConstraint.type === "avoid") {
-      // Currently prefer → change to avoid
+      // Currently avoid → change to prefer
       onSetConstraint(selectedEmployee, "prefer", day, shiftIndex)
     } else if (existingConstraint.type === "prefer") {
-      // Currently avoid → change to normal (remove constraint)
+      // Currently prefer → change to normal (remove constraint)
       onRemoveConstraint(selectedEmployee, day, shiftIndex)
     }
   }
@@ -189,57 +184,7 @@ export const ScheduleView = ({
     }
   }
 
-  const renderScheduleGrid = () => {
-    if (!selectedMonth || !selectedYear) return null
-
-    const firstDay = getFirstDayOfMonth(selectedMonth, selectedYear)
-    const daysInMonth = getDaysInMonth(selectedMonth, selectedYear)
-    const cells = []
-    const totalCells = firstDay + daysInMonth
-
-    // Empty cells for days before month starts
-    for (let i = 0; i < firstDay; i++) {
-      const isLastInRow = (i + 1) % 7 === 0
-      const isInLastRow = i >= Math.floor(totalCells / 7) * 7
-
-      const emptyCellClasses = ["p-2 min-h-20 border-gray-400"]
-      if (!isLastInRow) emptyCellClasses.push("border-r")
-      if (!isInLastRow) emptyCellClasses.push("border-b")
-
-      cells.push(
-        <div key={`empty-${i}`} className={cn(emptyCellClasses)}></div>
-      )
-    }
-
-    // Days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const daySchedule = schedule[day]
-
-      // Calculate position for border logic
-      const cellIndex = firstDay + day - 1
-      const isLastInRow = (cellIndex + 1) % 7 === 0
-      const isInLastRow = cellIndex >= Math.floor(totalCells / 7) * 7
-
-      cells.push(
-        <ScheduleCell
-          key={day}
-          day={day}
-          daySchedule={daySchedule}
-          employees={employees}
-          constraints={constraints}
-          selectedEmployee={selectedEmployee}
-          settings={settings}
-          isLastInRow={isLastInRow}
-          isInLastRow={isInLastRow}
-          showShiftColors={showShiftColors}
-          onShiftClick={handleShiftClick}
-          onDayClick={handleDayClick}
-        />
-      )
-    }
-
-    return cells
-  }
+  const currentViewConfig = VIEW_CONFIGURATIONS[currentView]
 
   return (
     <Card>
@@ -252,7 +197,7 @@ export const ScheduleView = ({
                 month: getMonthName(selectedMonth, t),
                 year: selectedYear,
               })}
-            {selectedEmployee && (
+            {selectedEmployee && currentViewConfig.supportsConstraints && (
               <p className="text-sm text-muted-foreground">
                 {t("schedule.settingPreferencesFor")}{" "}
                 <strong>
@@ -262,12 +207,18 @@ export const ScheduleView = ({
             )}
           </div>
           <div className="flex gap-2">
+            <ViewSelector
+              currentView={currentView}
+              onViewChange={handleViewChange}
+            />
+
             <ShiftLegend
               settings={settings}
               selectedEmployee={selectedEmployee}
               showShiftColors={showShiftColors}
               onToggleAllShifts={onToggleAllShifts}
             />
+
             {onGenerateSchedule && (
               <Button
                 onClick={onGenerateSchedule}
@@ -279,53 +230,17 @@ export const ScheduleView = ({
                   : t("schedule.generateButton")}
               </Button>
             )}
+
             <ServerStatus />
-            {settings.shiftsPerDay > 1 && (
-              <Button
-                variant={showShiftColors ? "default" : "outline"}
-                size="sm"
-                onClick={() => setShowShiftColors(!showShiftColors)}
-                className="flex items-center gap-2"
-                title={
-                  showShiftColors
-                    ? t("scheduleView.hideShiftColors")
-                    : t("scheduleView.showShiftColors")
-                }
-              >
-                <Palette className="w-4 h-4" />
-              </Button>
-            )}
-            {Object.keys(schedule).length > 0 && (
-              <div className="relative" ref={dropdownRef}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowExportDropdown(!showExportDropdown)}
-                  className="flex items-center gap-2"
-                >
-                  {t("schedule.export")}
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-                {showExportDropdown && (
-                  <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                    <button
-                      onClick={handleExportCSV}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <FileSpreadsheet className="w-4 h-4" />
-                      {t("schedule.exportCSV")}
-                    </button>
-                    <button
-                      onClick={handleExportImage}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <FileImage className="w-4 h-4" />
-                      {t("schedule.exportImage")}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+
+            <ViewToolbar
+              hasScheduleData={Object.keys(schedule).length > 0}
+              settings={settings}
+              showShiftColors={showShiftColors}
+              onToggleShiftColors={() => setShowShiftColors(!showShiftColors)}
+              onExportCSV={handleExportCSV}
+              onExportImage={handleExportImage}
+            />
           </div>
         </CardTitle>
       </CardHeader>
@@ -337,29 +252,21 @@ export const ScheduleView = ({
         )}
 
         {hasActiveSchedule && (
-          <div>
-            <div className="border border-gray-400 rounded-lg overflow-hidden">
-              <div className="grid grid-cols-7">
-                {[
-                  t("days.0"),
-                  t("days.1"),
-                  t("days.2"),
-                  t("days.3"),
-                  t("days.4"),
-                  t("days.5"),
-                  t("days.6"),
-                ].map((day) => (
-                  <div
-                    key={day}
-                    className="p-3 text-center font-medium bg-muted border-r border-b border-gray-400 last:border-r-0"
-                  >
-                    {day}
-                  </div>
-                ))}
-                {renderScheduleGrid()}
-              </div>
-            </div>
-          </div>
+          <ViewRenderer
+            currentView={currentView}
+            schedule={schedule}
+            employees={employees}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            constraints={constraints}
+            selectedEmployee={selectedEmployee}
+            settings={settings}
+            showShiftColors={showShiftColors}
+            onSetConstraint={onSetConstraint}
+            onRemoveConstraint={onRemoveConstraint}
+            onShiftClick={handleShiftClick}
+            onDayClick={handleDayClick}
+          />
         )}
       </CardContent>
     </Card>

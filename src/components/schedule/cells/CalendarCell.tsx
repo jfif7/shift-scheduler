@@ -7,7 +7,7 @@ import {
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 
-interface ScheduleCellProps {
+interface CalendarCellProps {
   day: number
   daySchedule: Schedule[number]
   employees: Employee[]
@@ -21,7 +21,7 @@ interface ScheduleCellProps {
   onDayClick: (day: number) => void
 }
 
-export const ScheduleCell = ({
+export const CalendarCell = ({
   day,
   daySchedule,
   employees,
@@ -33,7 +33,7 @@ export const ScheduleCell = ({
   showShiftColors = false,
   onShiftClick,
   onDayClick,
-}: ScheduleCellProps) => {
+}: CalendarCellProps) => {
   const t = useTranslations()
 
   // Get all shift constraints for this day to determine overall day state

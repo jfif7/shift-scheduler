@@ -15,7 +15,7 @@ import {
 import { ScheduleHistory } from "@/components/schedule/ScheduleHistory"
 import { EmployeeManager } from "@/components/schedule/EmployeeManager"
 import { ConstraintsPanel } from "@/components/schedule/ConstraintsPanel"
-import { ScheduleView } from "@/components/schedule/ScheduleView"
+import { ScheduleContainer } from "@/components/schedule/ScheduleContainer"
 import { LanguageSwitcher } from "@/components/LanguageSwitcher"
 import { useScheduleData } from "@/hooks/useScheduleData"
 import { useEmployeeManagement } from "@/hooks/useEmployeeManagement"
@@ -64,8 +64,12 @@ export default function ScheduleManager() {
       t
     )
 
-  const { removeConstraint, setShiftConstraint, setAllShiftsConstraint, setAllDaysConstraints } =
-    useConstraintManagement(constraints, setConstraints)
+  const {
+    removeConstraint,
+    setShiftConstraint,
+    setAllShiftsConstraint,
+    setAllDaysConstraints,
+  } = useConstraintManagement(constraints, setConstraints)
 
   // Unified constraint handler for both day and shift level
   const handleSetConstraint = (
@@ -86,9 +90,7 @@ export default function ScheduleManager() {
 
     // Get all constraints for this employee and shift across all days
     const shiftConstraints = constraints.filter(
-      (c) =>
-        c.employeeId === selectedEmployee &&
-        c.shiftIndex === shiftIndex
+      (c) => c.employeeId === selectedEmployee && c.shiftIndex === shiftIndex
     )
 
     // Determine the current state
@@ -106,7 +108,13 @@ export default function ScheduleManager() {
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
 
     // Use batch constraint function
-    setAllDaysConstraints(selectedEmployee, nextType, days, settings.shiftsPerDay, shiftIndex)
+    setAllDaysConstraints(
+      selectedEmployee,
+      nextType,
+      days,
+      settings.shiftsPerDay,
+      shiftIndex
+    )
   }
 
   const { isGenerating, handleGenerateSchedule } = useScheduleGeneration()
@@ -133,10 +141,10 @@ export default function ScheduleManager() {
       // Clear all localStorage data
       localStorage.removeItem("scheduleData")
       localStorage.removeItem("locale")
-      
+
       // Show success message
       toast.success(t("dataManagement.dataCleared"))
-      
+
       // Reload the page to reset all state
       window.location.reload()
     }
@@ -179,7 +187,7 @@ export default function ScheduleManager() {
                   {t("page.description")}
                 </p>
               </div>
-              
+
               <div className="border-t pt-6">
                 <div className="max-w-2xl mx-auto">
                   <h2 className="text-2xl font-semibold mb-4 text-center">
@@ -284,7 +292,7 @@ export default function ScheduleManager() {
                       isEmployeePanelCollapsed ? "col-span-2" : "xl:col-span-3"
                     )}
                   >
-                    <ScheduleView
+                    <ScheduleContainer
                       schedule={schedule}
                       employees={employees}
                       selectedMonth={selectedMonth}
