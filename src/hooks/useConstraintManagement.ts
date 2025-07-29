@@ -98,11 +98,58 @@ export const useConstraintManagement = (
     setConstraints([...updatedConstraints, ...newConstraints])
   }
 
+  const setAllDaysConstraints = (
+    employeeId: string,
+    type: "avoid" | "prefer" | null,
+    days: number[],
+    shiftsPerDay: number,
+    shiftIndex?: number
+  ) => {
+    // Remove existing constraints for the specified days and shifts
+    const filteredConstraints = constraints.filter((constraint) => 
+      !(
+        constraint.employeeId === employeeId && 
+        days.includes(constraint.date) &&
+      (shiftIndex === undefined || constraint.shiftIndex === shiftIndex))
+    )
+    
+    // Add new constraints if type is not null
+    const newConstraints: ShiftConstraint[] = []
+    if (type) {
+      for (const day of days) {
+        if (shiftIndex !== undefined) {
+          // Single shift constraint
+          newConstraints.push({
+            id: uuidv4(),
+            employeeId,
+            type,
+            date: day,
+            shiftIndex
+          })
+        } else if (shiftsPerDay !== undefined) {
+          // All shifts for the day
+          for (let shift = 0; shift < shiftsPerDay; shift++) {
+            newConstraints.push({
+              id: uuidv4(),
+              employeeId,
+              type,
+              date: day,
+              shiftIndex: shift
+            })
+          }
+        }
+      }
+    }
+    
+    setConstraints([...filteredConstraints, ...newConstraints])
+  }
+
   return {
     getConstraintsForEmployee,
     getShiftConstraint,
     removeConstraint,
     setShiftConstraint,
     setAllShiftsConstraint,
+    setAllDaysConstraints,
   }
 }

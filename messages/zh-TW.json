@@ -190,9 +190,9 @@
     "scheduleView": {
         "hideShiftColors": "隱藏班次顏色",
         "showShiftColors": "顯示班次顏色",
-        "setAllShifts_null": "設定全部班次",
-        "setAllShifts_prefer": "通通可以",
-        "setAllShifts_avoid": "通通不行",
+        "setAllShifts_null": "ALL",
+        "setAllShifts_prefer": "ALL",
+        "setAllShifts_avoid": "ALL",
         "setAllShiftsDescription": "設定整天的偏好"
     },
     "dataManagement": {

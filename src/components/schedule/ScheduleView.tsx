@@ -17,6 +17,7 @@ import {
   getMonthName,
 } from "@/utils/dateUtils"
 import { ScheduleCell } from "./ScheduleCell"
+import { ShiftLegend } from "./ShiftLegend"
 import { ServerStatus } from "./ServerStatus"
 import { cn } from "@/lib/utils"
 
@@ -40,6 +41,7 @@ interface ScheduleViewProps {
     date: number,
     shiftIndex?: number
   ) => void
+  onToggleAllShifts: (shiftIndex: number) => void
   onGenerateSchedule?: () => void
   isGenerating?: boolean
 }
@@ -55,6 +57,7 @@ export const ScheduleView = ({
   settings,
   onSetConstraint,
   onRemoveConstraint,
+  onToggleAllShifts,
   onGenerateSchedule,
   isGenerating = false,
 }: ScheduleViewProps) => {
@@ -149,11 +152,11 @@ export const ScheduleView = ({
     // 3-state cycle: normal → prefer → avoid → normal
     if (!existingConstraint) {
       // Currently normal → change to prefer
-      onSetConstraint(selectedEmployee, "prefer", day, shiftIndex)
-    } else if (existingConstraint.type === "prefer") {
-      // Currently prefer → change to avoid
       onSetConstraint(selectedEmployee, "avoid", day, shiftIndex)
     } else if (existingConstraint.type === "avoid") {
+      // Currently prefer → change to avoid
+      onSetConstraint(selectedEmployee, "prefer", day, shiftIndex)
+    } else if (existingConstraint.type === "prefer") {
       // Currently avoid → change to normal (remove constraint)
       onRemoveConstraint(selectedEmployee, day, shiftIndex)
     }
@@ -171,9 +174,9 @@ export const ScheduleView = ({
     let nextType: "prefer" | "avoid" | null = null
 
     if (existingShiftConstraints.length === 0) {
-      nextType = "prefer"
-    } else if (existingShiftConstraints.every((c) => c.type === "prefer")) {
       nextType = "avoid"
+    } else if (existingShiftConstraints.every((c) => c.type === "avoid")) {
+      nextType = "prefer"
     } else {
       nextType = null
     }
@@ -259,6 +262,12 @@ export const ScheduleView = ({
             )}
           </div>
           <div className="flex gap-2">
+            <ShiftLegend
+              settings={settings}
+              selectedEmployee={selectedEmployee}
+              showShiftColors={showShiftColors}
+              onToggleAllShifts={onToggleAllShifts}
+            />
             {onGenerateSchedule && (
               <Button
                 onClick={onGenerateSchedule}

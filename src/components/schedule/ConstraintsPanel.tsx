@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import { NumberInput } from "@/components/ui/number-input"
+import { TextInput } from "@/components/ui/text-input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScheduleSettings } from "@/types/schedule"
 import { useTranslations } from "next-intl"
@@ -114,19 +114,18 @@ export const ConstraintsPanel = ({
                     })}
                     :
                   </Label>
-                  <Input
-                    type="text"
+                  <TextInput
                     value={label}
                     placeholder={t("settings.shiftLabelPlaceholder", {
                       index: shiftIndex + 1,
                     })}
-                    onChange={(e) => {
+                    onChange={(newValue) => {
                       const newShiftLabels = [...(settings.shiftLabels || [])]
-                      newShiftLabels[shiftIndex] =
-                        e.target.value || `Shift ${shiftIndex + 1}`
+                      newShiftLabels[shiftIndex] = newValue || `Shift ${shiftIndex + 1}`
                       updateSetting("shiftLabels", newShiftLabels)
                     }}
                     className="flex-1"
+                    maxLength={20}
                   />
                 </div>
               ))}
@@ -190,7 +189,7 @@ export const ConstraintsPanel = ({
                   updateSetting("minRestDaysBetweenShifts", value)
                 }
                 min={0}
-                max={3}
+                max={4}
                 defaultValue={0}
               />
               <p className="text-xs text-muted-foreground">

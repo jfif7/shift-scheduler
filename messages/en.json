@@ -190,9 +190,9 @@
     "scheduleView": {
         "hideShiftColors": "Hide shift colors",
         "showShiftColors": "Show shift colors",
-        "setAllShifts_null": "Set all shifts",
-        "setAllShifts_prefer": "All shifts: prefer",
-        "setAllShifts_avoid": "All shifts: avoid",
+        "setAllShifts_null": "ALL",
+        "setAllShifts_prefer": "All",
+        "setAllShifts_avoid": "All",
         "setAllShiftsDescription": "Set preference for all shifts on this day"
     },
     "dataManagement": {

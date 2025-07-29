@@ -1,35 +1,57 @@
-import { ScheduleSettings } from "@/types/schedule"
+import { cn } from "@/lib/utils"
+import { Constraint, ScheduleSettings } from "@/types/schedule"
 
 interface ShiftLegendProps {
   settings: ScheduleSettings
-  showColors?: boolean
+  selectedEmployee?: string
+  constraints?: Constraint[]
+  showShiftColors: boolean
+  onToggleAllShifts?: (shiftIndex: number) => void
 }
 
 export const ShiftLegend = ({
   settings,
-  showColors = true,
+  selectedEmployee,
+  showShiftColors,
+  onToggleAllShifts,
 }: ShiftLegendProps) => {
-  // Don't render legend when colors are hidden
-  if (!showColors) {
+
+  if (settings.shiftsPerDay <= 1 || !showShiftColors) {
     return null
   }
 
   return (
-    <div className="shift-legend mb-4 p-3 bg-gray-50 rounded-lg border">
-      <div className="flex flex-wrap gap-4">
-        {settings.shiftLabels?.map((label, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <div className={`w-4 h-4 rounded shift-${index} border`} />
-            <span className="text-sm font-medium">{label}</span>
-          </div>
-        )) ||
-          // Fallback for when no custom labels are defined
-          Array.from({ length: settings.shiftsPerDay }, (_, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <div className={`w-4 h-4 rounded shift-${index} border`} />
-              <span className="text-sm font-medium">Shift {index + 1}</span>
+    <div className="flex items-center gap-2 text-sm">
+      <span className="text-muted-foreground font-medium">
+      </span>
+      <div className="flex gap-2 shift-legend">
+        {Array.from({ length: settings.shiftsPerDay }, (_, shiftIndex) => {
+          const shiftLabel = settings.shiftLabels?.[shiftIndex] || ""
+          const isClickable = selectedEmployee && onToggleAllShifts
+          
+          return (
+            <div
+              key={shiftIndex}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded border transition-all",
+                `shift-${shiftIndex}`,
+                isClickable && "cursor-pointer hover:scale-105 hover:shadow-sm",
+                !isClickable && "cursor-default"
+              )}
+              onClick={() => isClickable && onToggleAllShifts(shiftIndex)}
+            >
+              <div
+                className={cn(
+                  "w-3 h-3 rounded border-2",
+                  `shift-${shiftIndex}`
+                )}
+              />
+              <span className="text-xs font-medium text-gray-700">
+                {shiftLabel}
+              </span>
             </div>
-          ))}
+          )
+        })}
       </div>
     </div>
   )

@@ -64,7 +64,7 @@ export default function ScheduleManager() {
       t
     )
 
-  const { removeConstraint, setShiftConstraint, setAllShiftsConstraint } =
+  const { removeConstraint, setShiftConstraint, setAllShiftsConstraint, setAllDaysConstraints } =
     useConstraintManagement(constraints, setConstraints)
 
   // Unified constraint handler for both day and shift level
@@ -79,6 +79,34 @@ export default function ScheduleManager() {
     } else {
       setShiftConstraint(employeeId, type, date, shiftIndex)
     }
+  }
+
+  const handleToggleAllShifts = (shiftIndex: number) => {
+    if (!selectedEmployee) return
+
+    // Get all constraints for this employee and shift across all days
+    const shiftConstraints = constraints.filter(
+      (c) =>
+        c.employeeId === selectedEmployee &&
+        c.shiftIndex === shiftIndex
+    )
+
+    // Determine the current state
+    let nextType: "prefer" | "avoid" | null = null
+
+    if (shiftConstraints.length === 0) {
+      nextType = "avoid"
+    } else if (shiftConstraints.every((c) => c.type === "avoid")) {
+      nextType = "prefer"
+    } else {
+      nextType = null // Remove all constraints
+    }
+
+    const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate()
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
+
+    // Use batch constraint function
+    setAllDaysConstraints(selectedEmployee, nextType, days, settings.shiftsPerDay, shiftIndex)
   }
 
   const { isGenerating, handleGenerateSchedule } = useScheduleGeneration()
@@ -267,6 +295,7 @@ export default function ScheduleManager() {
                       settings={settings}
                       onSetConstraint={handleSetConstraint}
                       onRemoveConstraint={removeConstraint}
+                      onToggleAllShifts={handleToggleAllShifts}
                       onGenerateSchedule={onGenerateSchedule}
                       isGenerating={isGenerating}
                     />

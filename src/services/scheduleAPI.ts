@@ -1,11 +1,16 @@
 /**
  * Schedule API Service - Interface with CP-SAT server
- * 
+ *
  * This service provides integration with the FastAPI CP-SAT scheduler server.
  * It includes proper error handling, timeout management, and fallback mechanisms.
  */
 
-import { Employee, Constraint, Schedule, ScheduleSettings } from "@/types/schedule"
+import {
+  Employee,
+  Constraint,
+  Schedule,
+  ScheduleSettings,
+} from "@/types/schedule"
 
 // API Types matching server models
 export interface APIEmployee {
@@ -37,7 +42,6 @@ export interface APIScheduleSettings {
   even_distribution: boolean
   // Advanced optimization settings
   fairness_weight?: number
-  workload_balance_weight?: number
   preference_weight?: number
   optimize_for?: "balanced" | "minimal_cost" | "max_coverage"
 }
@@ -92,11 +96,13 @@ export interface APISolverStatusResponse {
 }
 
 // Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_SCHEDULER_API_URL || (() => {
-  throw new Error(
-    'NEXT_PUBLIC_SCHEDULER_API_URL environment variable is not set. '
-  )
-})()
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_SCHEDULER_API_URL ||
+  (() => {
+    throw new Error(
+      "NEXT_PUBLIC_SCHEDULER_API_URL environment variable is not set. "
+    )
+  })()
 const DEFAULT_TIMEOUT = 30000 // 30 seconds
 
 // Error types
@@ -107,14 +113,14 @@ export class ScheduleAPIError extends Error {
     public details?: unknown
   ) {
     super(message)
-    this.name = 'ScheduleAPIError'
+    this.name = "ScheduleAPIError"
   }
 }
 
 export class ScheduleTimeoutError extends ScheduleAPIError {
   constructor(timeout: number) {
     super(`Schedule generation timed out after ${timeout / 1000} seconds`)
-    this.name = 'ScheduleTimeoutError'
+    this.name = "ScheduleTimeoutError"
   }
 }
 
@@ -122,7 +128,7 @@ export class ScheduleServerError extends ScheduleAPIError {
   constructor(message: string, status: number) {
     super(`Server error: ${message}`)
     this.status = status
-    this.name = 'ScheduleServerError'
+    this.name = "ScheduleServerError"
   }
 }
 
@@ -160,7 +166,6 @@ function convertToAPISettings(settings: ScheduleSettings): APIScheduleSettings {
     even_distribution: settings.evenDistribution,
     // Advanced optimization defaults
     fairness_weight: 1.0,
-    workload_balance_weight: 1.0,
     preference_weight: 0.5,
     optimize_for: "balanced",
   }
@@ -168,16 +173,16 @@ function convertToAPISettings(settings: ScheduleSettings): APIScheduleSettings {
 
 function convertFromAPISchedule(apiSchedule: APISchedule): Schedule {
   const schedule: Schedule = {}
-  
+
   for (const [dateStr, daySchedule] of Object.entries(apiSchedule.days)) {
     const date = parseInt(dateStr)
     schedule[date] = {
-      shifts: daySchedule.shifts.map(shift => ({
+      shifts: daySchedule.shifts.map((shift) => ({
         employeeIds: shift.employee_ids,
       })),
     }
   }
-  
+
   return schedule
 }
 
@@ -197,7 +202,7 @@ async function makeRequest<T>(
       ...options,
       signal: controller.signal,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options.headers,
       },
     })
@@ -209,10 +214,12 @@ async function makeRequest<T>(
       try {
         const errorData = await response.json()
         if (errorData.detail) {
-          errorMessage = Array.isArray(errorData.detail) 
-            ? errorData.detail.map((d: { msg?: string } | string) => 
-                typeof d === 'object' && d.msg ? d.msg : String(d)
-              ).join(', ')
+          errorMessage = Array.isArray(errorData.detail)
+            ? errorData.detail
+                .map((d: { msg?: string } | string) =>
+                  typeof d === "object" && d.msg ? d.msg : String(d)
+                )
+                .join(", ")
             : errorData.detail
         }
       } catch {
@@ -224,17 +231,19 @@ async function makeRequest<T>(
     return await response.json()
   } catch (error) {
     clearTimeout(timeoutId)
-    
-    if (error instanceof DOMException && error.name === 'AbortError') {
+
+    if (error instanceof DOMException && error.name === "AbortError") {
       throw new ScheduleTimeoutError(timeoutMs)
     }
-    
+
     if (error instanceof ScheduleAPIError) {
       throw error
     }
-    
+
     throw new ScheduleAPIError(
-      `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Network error: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
     )
   }
 }
@@ -244,7 +253,7 @@ async function makeRequest<T>(
  */
 export async function checkHealth(): Promise<APIHealthResponse> {
   return makeRequest<APIHealthResponse>(`${API_BASE_URL}/health`, {
-    method: 'GET',
+    method: "GET",
   })
 }
 
@@ -252,9 +261,12 @@ export async function checkHealth(): Promise<APIHealthResponse> {
  * Get solver status
  */
 export async function getSolverStatus(): Promise<APISolverStatusResponse> {
-  return makeRequest<APISolverStatusResponse>(`${API_BASE_URL}/api/v1/solver/status`, {
-    method: 'GET',
-  })
+  return makeRequest<APISolverStatusResponse>(
+    `${API_BASE_URL}/api/v1/solver/status`,
+    {
+      method: "GET",
+    }
+  )
 }
 
 /**
@@ -287,7 +299,7 @@ export async function generateScheduleWithCPSAT(
   const response = await makeRequest<APIScheduleResponse>(
     `${API_BASE_URL}/api/v1/schedule/generate`,
     {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(request),
     },
     (timeout + 5) * 1000 // Add 5 seconds buffer to HTTP timeout
@@ -311,7 +323,7 @@ export async function testConnection(): Promise<{
   error?: string
 }> {
   const startTime = Date.now()
-  
+
   try {
     await checkHealth()
     const latency = Date.now() - startTime
@@ -319,7 +331,7 @@ export async function testConnection(): Promise<{
   } catch (error) {
     return {
       available: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     }
   }
 }
