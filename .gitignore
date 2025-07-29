@@ -6,6 +6,6 @@ dist/
 tsconfig.tsbuildinfo
 __pycache__
 
-.env.local
+.env.development
 .env
 .env.production

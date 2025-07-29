@@ -1,0 +1,64 @@
+services:
+  scheduler-api:
+    build: ..
+    container_name: scheduler
+    ports:
+      - "8211:8211"
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - PORT=8211
+    volumes:
+      - ../logs:/app/logs
+      - ../:/app
+    restart: unless-stopped
+    networks:
+      - scheduler-network
+    healthcheck:
+      test: [ "CMD", "curl -f http://localhost:8211/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Prometheus monitoring service
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - scheduler-network
+    depends_on:
+      - scheduler-api
+
+  # Cloudflare Tunnel service
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: tunnel
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    restart: unless-stopped
+    networks:
+      - scheduler-network
+    depends_on:
+      - scheduler-api
+
+networks:
+  scheduler-network:
+    name: scheduler-network
+    driver: bridge
+
+volumes:
+  prometheus_data:
