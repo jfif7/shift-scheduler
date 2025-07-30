@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { DualRangeSlider } from "@/components/ui/dual-range-slider"
-import { Trash2 } from "lucide-react"
+import { Trash2, Copy } from "lucide-react"
 import { Employee } from "@/types/schedule"
 import { useTranslations } from "next-intl"
 
@@ -19,6 +19,11 @@ interface EmployeeCardProps {
   onToggleTag: (employeeId: string, tag: string) => void
   onStartEditing: (employee: Employee) => void
   onStopEditing: () => void
+  onApplyToAll: (shiftsData: {
+    shiftsPerMonth: [number, number]
+    weekdayShifts: [number, number]
+    weekendShifts: [number, number]
+  }) => void
 }
 
 export const EmployeeCard = ({
@@ -32,6 +37,7 @@ export const EmployeeCard = ({
   onToggleTag,
   onStartEditing,
   onStopEditing,
+  onApplyToAll,
 }: EmployeeCardProps) => {
   const [editingName, setEditingName] = useState<string>("")
   const [editingShiftsPerMonth, setEditingShiftsPerMonth] = useState<
@@ -164,24 +170,56 @@ export const EmployeeCard = ({
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button onClick={saveEdits} size="sm">
-              {t("employees.save")}
-            </Button>
-            <Button onClick={onStopEditing} variant="outline" size="sm">
-              {t("employees.cancel")}
-            </Button>
-            <Button
-              onClick={() => {
-                onRemoveEmployee(employee.id)
-                onStopEditing()
-              }}
-              variant="destructive"
-              size="sm"
-            >
-              <Trash2 className="w-4 h-4 mr-1" />
-              {t("employees.delete")}
-            </Button>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Button onClick={saveEdits} size="sm" className="flex-1">
+                {t("employees.save")}
+              </Button>
+              <Button
+                onClick={onStopEditing}
+                variant="outline"
+                size="sm"
+                className="flex-1"
+              >
+                {t("employees.cancel")}
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  const confirmed = window.confirm(
+                    t("employees.applyToAllEmployees") + "?"
+                  )
+                  if (confirmed) {
+                    onApplyToAll({
+                      shiftsPerMonth: editingShiftsPerMonth,
+                      weekdayShifts: editingWeekdayShifts,
+                      weekendShifts: editingWeekendShifts,
+                    })
+                    onStopEditing()
+                  }
+                }}
+                variant="secondary"
+                size="sm"
+                title={t("employees.applyToAllTooltip")}
+                className="flex-1"
+              >
+                <Copy className="w-4 h-4 mr-1" />
+                {t("employees.applyToAll")}
+              </Button>
+              <Button
+                onClick={() => {
+                  onRemoveEmployee(employee.id)
+                  onStopEditing()
+                }}
+                variant="destructive"
+                size="sm"
+                className="flex-1"
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                {t("employees.delete")}
+              </Button>
+            </div>
           </div>
         </div>
       ) : (

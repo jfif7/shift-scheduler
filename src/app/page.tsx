@@ -65,6 +65,24 @@ export default function ScheduleManager() {
       t
     )
 
+  const applyShiftsToAll = (shiftsData: {
+    shiftsPerMonth: [number, number]
+    weekdayShifts: [number, number]
+    weekendShifts: [number, number]
+  }) => {
+    const updatedEmployees = employees.map((emp) => ({
+      ...emp,
+      shiftsPerMonth: shiftsData.shiftsPerMonth,
+      weekdayShifts: shiftsData.weekdayShifts,
+      weekendShifts: shiftsData.weekendShifts,
+    }))
+    setEmployees(updatedEmployees)
+    
+    toast.success(t("employees.applyToAllEmployees"), {
+      description: `${employees.length} employees updated`,
+    })
+  }
+
   const {
     removeConstraint,
     setShiftConstraint,
@@ -312,6 +330,7 @@ export default function ScheduleManager() {
                             onRemoveEmployee={removeEmployee}
                             onUpdateEmployee={updateEmployee}
                             onToggleTag={toggleEmployeeTag}
+                            onApplyShiftsToAll={applyShiftsToAll}
                             predefinedTags={PREDEFINED_TAGS}
                             hasActiveSchedule={activeScheduleId !== null}
                           />

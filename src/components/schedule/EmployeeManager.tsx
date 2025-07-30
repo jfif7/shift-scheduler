@@ -14,6 +14,11 @@ interface EmployeeManagerProps {
   onRemoveEmployee: (id: string) => void
   onUpdateEmployee: (id: string, updates: Partial<Employee>) => void
   onToggleTag: (employeeId: string, tag: string) => void
+  onApplyShiftsToAll: (shiftsData: {
+    shiftsPerMonth: [number, number]
+    weekdayShifts: [number, number]
+    weekendShifts: [number, number]
+  }) => void
   predefinedTags: string[]
   hasActiveSchedule: boolean
 }
@@ -26,6 +31,7 @@ export const EmployeeManager = ({
   onRemoveEmployee,
   onUpdateEmployee,
   onToggleTag,
+  onApplyShiftsToAll,
   predefinedTags,
   hasActiveSchedule,
 }: EmployeeManagerProps) => {
@@ -83,6 +89,7 @@ export const EmployeeManager = ({
                   onToggleTag={onToggleTag}
                   onStartEditing={handleStartEditing}
                   onStopEditing={handleStopEditing}
+                  onApplyToAll={onApplyShiftsToAll}
                 />
               ))}
             </div>
