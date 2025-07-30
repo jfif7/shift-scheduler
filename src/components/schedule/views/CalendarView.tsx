@@ -48,7 +48,7 @@ export const CalendarView = ({
   const t = useTranslations()
 
   const renderScheduleGrid = () => {
-    if (!selectedMonth || !selectedYear) return null
+    if (selectedMonth === null || selectedYear === null) return null
 
     const firstDay = getFirstDayOfMonth(selectedMonth, selectedYear)
     const daysInMonth = getDaysInMonth(selectedMonth, selectedYear)

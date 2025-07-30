@@ -90,7 +90,7 @@ export const ScheduleHistory = ({
   }
 
   const handleAddSchedule = () => {
-    if (!newMonth || !newYear || !newName.trim()) {
+    if (newMonth === null || newYear === null) {
       toast.error(t("toast.invalidInput"), {
         description: t("toast.selectAllFields"),
       })
