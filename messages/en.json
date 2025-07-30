@@ -16,7 +16,7 @@
         "exportCSV": "Export as CSV",
         "exportImage": "Export as Image",
         "settingPreferencesFor": "Setting preferences for:",
-        "noActiveSchedule": "No active schedule selected. Please select a schedule from the schedule history above to view its generated schedule.",
+        "noActiveSchedule": "No active schedule selected. Please select a schedule from the schedule history on the left to view its generated schedule.",
         "monthSchedule": "{month} {year} Schedule",
         "clickToSetPreferences": "Click on days to set preferences:",
         "preferredDays": "Preferred days (✓)",
@@ -69,7 +69,9 @@
         "tags": "Tags",
         "newEmployee": "New Employee",
         "showEmployees": "Show Employees",
-        "hideEmployees": "Hide Employees"
+        "hideEmployees": "Hide Employees",
+        "showSidePanel": "Show Side Panel",
+        "hideSidePanel": "Hide Side Panel"
     },
     "tags": {
         "weekendType": "Weekend type",
@@ -80,6 +82,8 @@
         "title": "Schedule History",
         "showAll": "Show All",
         "addSchedule": "Add Schedule",
+        "name": "Schedule Name",
+        "namePlaceholder": "Enter schedule name",
         "noSchedulesYet": "No schedules created yet.",
         "createNewSchedule": "Create New Schedule",
         "month": "Month",
@@ -154,7 +158,7 @@
         "employeeUpdated": "Employee updated",
         "employeeUpdatedDescription": "Employee information has been saved.",
         "invalidInput": "Invalid input",
-        "selectBothMonthYear": "Please select both month and year.",
+        "selectAllFields": "Please fill in all required fields.",
         "scheduleCreated": "Schedule created",
         "scheduleCreatedDescription": "{month} {year} schedule has been created{importMessage}.",
         "creationFailed": "Creation failed",

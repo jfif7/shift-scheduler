@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS: ScheduleSettings = {
   minShiftsPerWeek: 0,
   evenDistribution: true,
   shiftLabels: ["Shift 1"],
-  preferredAlgorithm: "auto"
+  preferredAlgorithm: "auto",
 }
 
 export const useScheduleData = () => {
@@ -52,6 +52,9 @@ export const useScheduleData = () => {
         setSchedules(
           (data.schedules || []).map((schedule: ScheduleItem) => ({
             ...schedule,
+            name:
+              schedule.name ||
+              `Schedule ${schedule.year}/${schedule.month + 1}`,
             createdAt: new Date(schedule.createdAt),
           }))
         )
@@ -65,6 +68,7 @@ export const useScheduleData = () => {
   const addSchedule = (
     month: number,
     year: number,
+    name: string,
     importFromScheduleId?: string
   ): string => {
     // Get employees to import if specified
@@ -84,6 +88,7 @@ export const useScheduleData = () => {
 
     const newSchedule: ScheduleItem = {
       id: uuidv4(),
+      name,
       month,
       year,
       employees: employeesToImport,

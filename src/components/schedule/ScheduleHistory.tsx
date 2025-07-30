@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
@@ -21,6 +22,7 @@ interface ScheduleHistoryProps {
   onScheduleAdd: (
     month: number,
     year: number,
+    name: string,
     importFromScheduleId?: string
   ) => void
   onScheduleDelete: (scheduleId: string) => void
@@ -36,6 +38,8 @@ export const ScheduleHistory = ({
   const [isAddingSchedule, setIsAddingSchedule] = useState(false)
   const [newMonth, setNewMonth] = useState<number | null>(null)
   const [newYear, setNewYear] = useState<number | null>(null)
+  const [newName, setNewName] = useState<string>("")
+  const [newNameEdited, setNewNameEdited] = useState<boolean>(false)
   const [importFromScheduleId, setImportFromScheduleId] =
     useState<string>("auto")
   const t = useTranslations()
@@ -86,9 +90,9 @@ export const ScheduleHistory = ({
   }
 
   const handleAddSchedule = () => {
-    if (!newMonth || !newYear) {
+    if (!newMonth || !newYear || !newName.trim()) {
       toast.error(t("toast.invalidInput"), {
-        description: t("toast.selectBothMonthYear"),
+        description: t("toast.selectAllFields"),
       })
       return
     }
@@ -103,11 +107,8 @@ export const ScheduleHistory = ({
         importScheduleId = importFromScheduleId
       }
 
-      onScheduleAdd(newMonth, newYear, importScheduleId)
+      onScheduleAdd(newMonth, newYear, newName.trim(), importScheduleId)
       setIsAddingSchedule(false)
-      setNewMonth(null)
-      setNewYear(null)
-      setImportFromScheduleId("auto")
 
       const importMessage = importScheduleId
         ? t("toast.withImportedEmployees")
@@ -199,6 +200,8 @@ export const ScheduleHistory = ({
                 setIsAddingSchedule(true)
                 setNewMonth(month)
                 setNewYear(year)
+                setNewName(`${year} ${getMonthName(month, t)}`)
+                setNewNameEdited(false)
                 setImportFromScheduleId("auto")
               }}
               size="sm"
@@ -223,6 +226,22 @@ export const ScheduleHistory = ({
               <h4 className="font-medium">
                 {t("scheduleHistory.createNewSchedule")}
               </h4>
+
+              {/* Schedule Name Input */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  {t("scheduleHistory.name")}
+                </label>
+                <Input
+                  value={newName}
+                  onChange={(e) => {
+                    setNewName(e.target.value)
+                    setNewNameEdited(true)
+                  }}
+                  placeholder={t("scheduleHistory.namePlaceholder")}
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium">
@@ -230,7 +249,13 @@ export const ScheduleHistory = ({
                   </label>
                   <Select
                     value={newMonth?.toString() || ""}
-                    onValueChange={(value) => setNewMonth(parseInt(value))}
+                    onValueChange={(value) => {
+                      const parsed = parseInt(value)
+                      setNewMonth(parsed)
+                      if (!newNameEdited) {
+                        setNewName(`${newYear} ${getMonthName(parsed, t)}`)
+                      }
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue
@@ -252,7 +277,13 @@ export const ScheduleHistory = ({
                   </label>
                   <Select
                     value={newYear?.toString() || ""}
-                    onValueChange={(value) => setNewYear(parseInt(value))}
+                    onValueChange={(value) => {
+                      const parsed = parseInt(value)
+                      setNewYear(parsed)
+                      if (!newNameEdited && newMonth) {
+                        setNewName(`${parsed} ${getMonthName(newMonth, t)}`)
+                      }
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue
@@ -294,8 +325,8 @@ export const ScheduleHistory = ({
                       </SelectItem>
                       {sortedSchedules.map((schedule) => (
                         <SelectItem key={schedule.id} value={schedule.id}>
-                          {t("scheduleHistory.copyFrom")}{" "}
-                          {getMonthName(schedule.month, t)} {schedule.year} (
+                          {t("scheduleHistory.copyFrom")} {schedule.name} (
+                          {getMonthName(schedule.month, t)} {schedule.year},{" "}
                           {schedule.employees.length}{" "}
                           {t("scheduleHistory.employees")})
                         </SelectItem>
@@ -354,9 +385,12 @@ export const ScheduleHistory = ({
                         ) : (
                           <Circle className="w-4 h-4 text-muted-foreground" />
                         )}
-                        <span className="font-medium">
-                          {getMonthName(schedule.month, t)} {schedule.year}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{schedule.name}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {schedule.year} {getMonthName(schedule.month, t)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

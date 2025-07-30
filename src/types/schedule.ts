@@ -54,6 +54,7 @@ export interface ScheduleSettings {
 
 export interface ScheduleItem {
   id: string
+  name: string
   month: number // 0-11
   year: number // 2025
   employees: Employee[]

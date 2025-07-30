@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Users,
   Trash2,
+  History,
 } from "lucide-react"
 import { ScheduleHistory } from "@/components/schedule/ScheduleHistory"
 import { EmployeeManager } from "@/components/schedule/EmployeeManager"
@@ -119,10 +120,15 @@ export default function ScheduleManager() {
 
   const { isGenerating, handleGenerateSchedule } = useScheduleGeneration()
 
-  const { isEmployeePanelCollapsed, toggleEmployeePanel } =
-    useCollapsibleLayout()
+  const {
+    isEmployeePanelCollapsed: isSidePanelCollapsed,
+    toggleEmployeePanel,
+  } = useCollapsibleLayout()
 
   const [selectedEmployee, setSelectedEmployee] = useState<string>("")
+  const [leftPanelTab, setLeftPanelTab] = useState<"history" | "employees">(
+    "history"
+  )
 
   const onGenerateSchedule = () => {
     handleGenerateSchedule(
@@ -221,14 +227,6 @@ export default function ScheduleManager() {
             }
           >
             <div className="space-y-6">
-              <ScheduleHistory
-                schedules={schedules}
-                activeScheduleId={activeScheduleId}
-                onScheduleSelect={setActiveScheduleId}
-                onScheduleAdd={addSchedule}
-                onScheduleDelete={deleteSchedule}
-              />
-
               {/* Collapsible Layout */}
               <div className="relative">
                 {/* Toggle Button */}
@@ -238,23 +236,23 @@ export default function ScheduleManager() {
                   onClick={toggleEmployeePanel}
                   className="mb-4 shadow-sm hover:shadow-md transition-all"
                   title={
-                    isEmployeePanelCollapsed
-                      ? "Show employee panel (Ctrl+B)"
-                      : "Hide employee panel (Ctrl+B)"
+                    isSidePanelCollapsed
+                      ? "Show side panel (Ctrl+B)"
+                      : "Hide side panel (Ctrl+B)"
                   }
                 >
-                  {isEmployeePanelCollapsed ? (
+                  {isSidePanelCollapsed ? (
                     <>
                       <Users className="w-4 h-4 mr-2" />
                       <ChevronRight className="w-4 h-4" />
                       <span className="ml-1">
-                        {t("employees.showEmployees")}
+                        {t("employees.showSidePanel")}
                       </span>
                     </>
                   ) : (
                     <>
                       <ChevronLeft className="w-4 h-4 mr-2" />
-                      <span>{t("employees.hideEmployees")}</span>
+                      <span>{t("employees.hideSidePanel")}</span>
                     </>
                   )}
                 </Button>
@@ -263,25 +261,62 @@ export default function ScheduleManager() {
                 <div
                   className={cn(
                     "transition-all duration-300 ease-in-out",
-                    isEmployeePanelCollapsed
+                    isSidePanelCollapsed
                       ? "grid grid-cols-1 gap-6"
                       : "grid grid-cols-1 xl:grid-cols-4 gap-6"
                   )}
                 >
-                  {/* Employee Panel - Conditional Rendering */}
-                  {!isEmployeePanelCollapsed && (
+                  {/* Side Panel with Tabs - Conditional Rendering */}
+                  {!isSidePanelCollapsed && (
                     <div className="transition-all duration-300">
-                      <EmployeeManager
-                        employees={employees}
-                        selectedEmployee={selectedEmployee}
-                        onEmployeeSelect={setSelectedEmployee}
-                        onAddEmployee={addEmployee}
-                        onRemoveEmployee={removeEmployee}
-                        onUpdateEmployee={updateEmployee}
-                        onToggleTag={toggleEmployeeTag}
-                        predefinedTags={PREDEFINED_TAGS}
-                        hasActiveSchedule={activeScheduleId !== null}
-                      />
+                      <Tabs
+                        value={leftPanelTab}
+                        onValueChange={(value) =>
+                          setLeftPanelTab(value as "history" | "employees")
+                        }
+                        className="w-full"
+                      >
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger
+                            value="history"
+                            className="flex items-center gap-2"
+                          >
+                            <History className="w-4 h-4" />
+                            {t("scheduleHistory.title")}
+                          </TabsTrigger>
+                          <TabsTrigger
+                            value="employees"
+                            className="flex items-center gap-2"
+                          >
+                            <Users className="w-4 h-4" />
+                            {t("employees.title")}
+                          </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="history" className="mt-4">
+                          <ScheduleHistory
+                            schedules={schedules}
+                            activeScheduleId={activeScheduleId}
+                            onScheduleSelect={setActiveScheduleId}
+                            onScheduleAdd={addSchedule}
+                            onScheduleDelete={deleteSchedule}
+                          />
+                        </TabsContent>
+
+                        <TabsContent value="employees" className="mt-4">
+                          <EmployeeManager
+                            employees={employees}
+                            selectedEmployee={selectedEmployee}
+                            onEmployeeSelect={setSelectedEmployee}
+                            onAddEmployee={addEmployee}
+                            onRemoveEmployee={removeEmployee}
+                            onUpdateEmployee={updateEmployee}
+                            onToggleTag={toggleEmployeeTag}
+                            predefinedTags={PREDEFINED_TAGS}
+                            hasActiveSchedule={activeScheduleId !== null}
+                          />
+                        </TabsContent>
+                      </Tabs>
                     </div>
                   )}
 
@@ -289,7 +324,7 @@ export default function ScheduleManager() {
                   <div
                     className={cn(
                       "transition-all duration-300",
-                      isEmployeePanelCollapsed ? "col-span-2" : "xl:col-span-3"
+                      isSidePanelCollapsed ? "col-span-2" : "xl:col-span-3"
                     )}
                   >
                     <ScheduleContainer

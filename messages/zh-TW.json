@@ -50,7 +50,7 @@
         "title": "管理員工",
         "selectScheduleDescription": "點擊員工來選擇和編輯，然後點擊日曆日期來設定偏好",
         "noActiveScheduleDescription": "從上方的歷史記錄中選擇一個班表來管理員工",
-        "noActiveScheduleMessage": "未選擇任何活動班表。請從上方的班表歷史中選擇一個班表或創建一個新的。",
+        "noActiveScheduleMessage": "未選擇任何活動班表。請從左邊的班表歷史中選擇一個班表或創建一個新的。",
         "noEmployeesMessage": "尚未添加任何員工。",
         "addFirstEmployee": "添加第一個員工",
         "addEmployee": "添加員工",
@@ -69,7 +69,9 @@
         "tags": "標籤",
         "newEmployee": "新員工",
         "showEmployees": "顯示員工",
-        "hideEmployees": "隱藏員工"
+        "hideEmployees": "隱藏員工",
+        "showSidePanel": "顯示側邊面板",
+        "hideSidePanel": "隱藏側邊面板"
     },
     "tags": {
         "weekendType": "週末班",
@@ -79,8 +81,10 @@
     "scheduleHistory": {
         "title": "班表歷史",
         "showAll": "顯示全部",
-        "addSchedule": "添加班表",
-        "noSchedulesYet": "尚未創建任何班表。",
+        "addSchedule": "新增班表",
+        "name": "班表名稱",
+        "namePlaceholder": "輸入班表名稱",
+        "noSchedulesYet": "尚未建立任何班表。",
         "createNewSchedule": "創建新班表",
         "month": "月份",
         "year": "年份",
@@ -154,7 +158,7 @@
         "employeeUpdated": "員工已更新",
         "employeeUpdatedDescription": "員工資訊已保存。",
         "invalidInput": "輸入無效",
-        "selectBothMonthYear": "請選擇月份和年份。",
+        "selectAllFields": "請填寫所有欄位。",
         "scheduleCreated": "班表已創建",
         "scheduleCreatedDescription": "{year}年{month}班表已創建{importMessage}。",
         "creationFailed": "創建失敗",
