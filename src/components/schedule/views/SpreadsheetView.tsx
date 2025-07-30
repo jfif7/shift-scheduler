@@ -102,7 +102,7 @@ export const SpreadsheetView = ({
           <div
             className="grid gap-0"
             style={{
-              gridTemplateColumns: `120px repeat(${spreadsheetData.dateColumns.length}, 60px)`,
+              gridTemplateColumns: `120px repeat(${spreadsheetData.dateColumns.length}, 48px)`,
             }}
           >
             {/* Employee Header */}
@@ -133,7 +133,7 @@ export const SpreadsheetView = ({
               key={spreadsheetData.employees[employeeIndex].id}
               className="grid gap-0"
               style={{
-                gridTemplateColumns: `120px repeat(${spreadsheetData.dateColumns.length}, 60px)`,
+                gridTemplateColumns: `120px repeat(${spreadsheetData.dateColumns.length}, 48px)`,
               }}
             >
               {/* Employee Name */}
