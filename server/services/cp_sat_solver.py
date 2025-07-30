@@ -5,6 +5,7 @@ CP-SAT solver implementation for employee scheduling
 from ortools.sat.python import cp_model
 from typing import Dict, List, Optional, Tuple, Union
 import time
+import logging
 
 from models.schedule_models import (
     Employee,
@@ -19,9 +20,15 @@ from models.schedule_models import (
 )
 from utils.date_utils import get_days_in_month, is_weekend, get_first_day_of_month
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 class ScheduleSolver:
     """CP-SAT based employee scheduling solver"""
+
+    # Tag constants
+    WEEKEND_TAG = "tags.weekendType"
 
     def __init__(self) -> None:
         self.model: cp_model.CpModel = cp_model.CpModel()
@@ -237,7 +244,7 @@ class ScheduleSolver:
             WEEKEND_IMBALANCE: 100,
             ROOKIE_TAG: 100, //TODO
             VETERAN_TAG: 100, //TODO
-            WEEKEND_SHIFT_TAG: 100, //TODO
+            WEEKEND_SHIFT_TAG: 100,
             // Individual
             TOTAL_SHIFT_COUNT: 100,
             WEEKDAY_SHIFT_COUNT: 100,
@@ -249,6 +256,7 @@ class ScheduleSolver:
         } as const
         """
 
+        first_day_of_month = get_first_day_of_month(month, year)
         # Persons per shift
         for day in range(1, days_in_month + 1):
             for shift in range(settings.shifts_per_day):
@@ -289,7 +297,7 @@ class ScheduleSolver:
 
         # Prevent multiple shifts per day (if enabled)
         if settings.prevent_multiple_shifts_per_day:
-            for emp_idx in range(len(employees)):
+            for emp_idx, emp in enumerate(employees):
                 for day in range(1, days_in_month + 1):
                     day_shifts = [
                         self.work_shifts[emp_idx][day][shift]
@@ -298,10 +306,14 @@ class ScheduleSolver:
                     self.model.Add(sum(day_shifts) <= 1)
 
         # Maximum consecutive working days
-        for emp_idx in range(len(employees)):
+        for emp_idx, emp in enumerate(employees):
             for start_day in range(
                 1, days_in_month - settings.max_consecutive_days + 1
             ):
+                if self.WEEKEND_TAG in emp.tags and settings.max_consecutive_days == 1:
+                    start_day_of_week = (first_day_of_month + start_day - 1) % 7
+                    if start_day_of_week == 5:
+                        continue
                 consecutive_days = []
                 for day in range(
                     start_day, start_day + settings.max_consecutive_days + 1
@@ -318,7 +330,9 @@ class ScheduleSolver:
 
         # Minimum rest days between shifts
         if settings.min_rest_days_between_shifts > 0:
-            self._add_rest_day_constraints(employees, settings, days_in_month)
+            self._add_rest_day_constraints(
+                employees, settings, days_in_month, month, year
+            )
 
         # Employee preferences and constraints
         self._add_preference_constraints(
@@ -360,20 +374,36 @@ class ScheduleSolver:
                 current_day = current_day + 7
 
     def _add_rest_day_constraints(
-        self, employees: List[Employee], settings: ScheduleSettings, days_in_month: int
+        self,
+        employees: List[Employee],
+        settings: ScheduleSettings,
+        days_in_month: int,
+        month: int,
+        year: int,
     ) -> None:
         """Add minimum rest day constraints between shifts"""
-        for emp_idx in range(len(employees)):
+        first_day_of_month = get_first_day_of_month(month, year)
+
+        for emp_idx, emp in enumerate(employees):
             for day in range(1, days_in_month):
                 today_working = self.work_days[emp_idx][day]
                 for rest_day in range(1, settings.min_rest_days_between_shifts + 1):
                     next_day = day + rest_day
-                    if next_day <= days_in_month:
-                        next_day_working = self.work_days[emp_idx][next_day]
-                        # If working today, cannot work on rest day
-                        self.model.AddImplication(today_working, next_day_working.Not())
-                    else:
+                    if next_day > days_in_month:
                         break
+                    next_day_working = self.work_days[emp_idx][next_day]
+
+                    # Special case for weekend tag
+                    if (
+                        self.WEEKEND_TAG in emp.tags and rest_day == 1
+                    ):  # Only for immediate next day
+                        # Check if today is Saturday and next_day is Sunday (consecutive weekend)
+                        today_day_of_week = (first_day_of_month + day - 1) % 7
+
+                        if today_day_of_week == 5:  # Saturday -> Sunday
+                            continue
+
+                    self.model.AddImplication(today_working, next_day_working.Not())
 
     def _add_preference_constraints(
         self,
