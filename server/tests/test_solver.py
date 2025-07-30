@@ -489,8 +489,8 @@ def test_advanced_constraint_types():
         max_shifts_per_week=5,
         min_shifts_per_week=2,
         even_distribution=True,
-        preference_weight=2.0,
-        fairness_weight=1.5,
+        preference_weight=4,
+        fairness_weight=3,
         optimize_for="balanced",
     )
 
@@ -592,8 +592,8 @@ def test_optimization_objectives():
         max_shifts_per_week=4,
         min_shifts_per_week=2,
         even_distribution=True,
-        fairness_weight=2.0,
-        preference_weight=1.0,
+        fairness_weight=2,
+        preference_weight=1,
     )
 
     objectives_to_test = ["balanced", "minimal_cost", "max_coverage"]

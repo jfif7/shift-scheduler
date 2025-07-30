@@ -369,7 +369,13 @@ class ScheduleSolver:
                 ]
                 if settings.max_shifts_per_week < 7:
                     self.model.Add(sum(week_shifts) <= settings.max_shifts_per_week)
-                if settings.min_shifts_per_week > 0:
+                shift_needed = (week_end - week_start + 1) * sum(
+                    settings.persons_per_shift
+                )
+                if (
+                    settings.min_shifts_per_week > 0
+                    and shift_needed >= settings.min_shifts_per_week * len(employees)
+                ):
                     self.model.Add(sum(week_shifts) >= settings.min_shifts_per_week)
 
                 current_day = current_day + 7
