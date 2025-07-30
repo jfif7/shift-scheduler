@@ -68,6 +68,9 @@
         "shifts": "班次",
         "tags": "標籤",
         "newEmployee": "新員工",
+        "applyToAll": "套用至全部",
+        "applyToAllEmployees": "套用至所有員工",
+        "applyToAllTooltip": "將目前班次偏好套用至所有員工",
         "showEmployees": "顯示員工",
         "hideEmployees": "隱藏員工",
         "showSidePanel": "顯示側邊面板",
@@ -205,5 +208,11 @@
         "clearAllDataDescription": "這將永久刪除您瀏覽器中儲存的所有排班表、員工、設定和偏好。此操作無法復原。",
         "clearAllDataConfirm": "您確定要清除所有資料嗎？此操作無法復原。",
         "dataCleared": "所有資料已成功清除"
+    },
+    "generation": {
+        "generationFailed": "生成失敗",
+        "generationSuccess": "用{algorithm}生成完成",
+        "errorNotEnoughShifts": "最大預排班數 ({totalMaxShifts}) 不足所有班次 ({totalShiftsNeeded})",
+        "errorTooManyShifts": "最小預排班數 ({totalMinShifts}) 超過所有班次 ({totalShiftsNeeded})"
     }
 }

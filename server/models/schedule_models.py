@@ -63,12 +63,12 @@ class ScheduleSettings(BaseModel):
     even_distribution: bool = Field(
         default=True, description="Try to balance weekend shifts fairly"
     )
-    fairness_weight: float = Field(
-        default=1.0, ge=0.0, description="Weight for fairness in objective"
+    fairness_weight: int = Field(
+        default=1, ge=0, description="Weight for fairness in objective"
     )
-    preference_weight: float = Field(
-        default=1.0,
-        ge=0.0,
+    preference_weight: int = Field(
+        default=1,
+        ge=0,
         description="Weight for preference constraints in objective",
     )
     optimize_for: str = Field(

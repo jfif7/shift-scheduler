@@ -136,7 +136,7 @@ export const CalendarCell = ({
                     <div
                       key={`${empId}-${day}-${shiftIndex}-${idx}`}
                       className={cn(
-                        "text-[12px] truncate",
+                        "text-[14px] truncate",
                         isCurrentSelectedEmployee
                           ? "font-bold ring-1 ring-blue-400"
                           : ""

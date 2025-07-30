@@ -35,6 +35,7 @@ class ScheduleSolver:
         self.solver: cp_model.CpSolver = cp_model.CpSolver()
         self.work_shifts: Dict[int, Dict[int, Dict[int, cp_model.IntVar]]] = {}
         self.work_days: Dict[int, Dict[int, cp_model.IntVar]] = {}
+        self.deviation: List[cp_model.IntVar] = []
         self.objective_terms: List[Union[cp_model.IntVar, cp_model.LinearExpr]] = []
 
     def solve_schedule(
@@ -508,6 +509,8 @@ class ScheduleSolver:
 
         # Calculate mean (we'll work with total * num_employees to avoid division)
         num_employees = len(employees)
+        total_w //= num_employees
+        self.deviation = []
 
         for emp_idx, score in enumerate(weekend_scores):
             # For each employee, calculate |score * num_employees - total_score|
@@ -515,10 +518,11 @@ class ScheduleSolver:
             deviation = self.model.NewIntVar(
                 0, 1000 * num_employees, f"deviation_{emp_idx}"
             )
+            self.deviation.append(deviation)
 
             # Take absolute value: deviation = |diff|
             self.model.AddAbsEquality(deviation, score * num_employees - total_w)
-            self.objective_terms.append(deviation * (-settings.fairness_weight))
+            self.objective_terms.append(deviation * (settings.fairness_weight) * -1)
 
     def _extract_schedule(
         self,

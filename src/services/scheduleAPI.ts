@@ -165,8 +165,8 @@ function convertToAPISettings(settings: ScheduleSettings): APIScheduleSettings {
     min_shifts_per_week: settings.minShiftsPerWeek,
     even_distribution: settings.evenDistribution,
     // Advanced optimization defaults
-    fairness_weight: 1.0,
-    preference_weight: 0.5,
+    fairness_weight: 2,
+    preference_weight: 100,
     optimize_for: "balanced",
   }
 }

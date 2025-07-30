@@ -389,33 +389,6 @@ export const generateScheduleGenetic = async (
 ): Promise<{ schedule: Schedule; success: boolean; message: string }> => {
   const daysInMonth = getDaysInMonth(selectedMonth, selectedYear)
 
-  // Calculate total shifts needed and available
-  const totalShiftsNeeded = getTotalSlotsNeeded(daysInMonth, settings)
-  const totalMinShifts = employees.reduce(
-    (sum, emp) => sum + emp.shiftsPerMonth[0],
-    0
-  )
-  const totalMaxShifts = employees.reduce(
-    (sum, emp) => sum + emp.shiftsPerMonth[1],
-    0
-  )
-
-  if (totalMaxShifts < totalShiftsNeeded) {
-    return {
-      schedule: {},
-      success: false,
-      message: `Not enough maximum shifts available (${totalMaxShifts}) to cover all required shifts (${totalShiftsNeeded})`,
-    }
-  }
-
-  if (totalMinShifts > totalShiftsNeeded) {
-    return {
-      schedule: {},
-      success: false,
-      message: `Minimum shifts required (${totalMinShifts}) exceed total shifts needed (${totalShiftsNeeded})`,
-    }
-  }
-
   try {
     // Create genetic algorithm instance
     const geneticInstance = genetic.create<OptimizedScheduleGenetic>()

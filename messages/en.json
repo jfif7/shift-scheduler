@@ -68,6 +68,9 @@
         "shifts": "shifts",
         "tags": "Tags",
         "newEmployee": "New Employee",
+        "applyToAll": "Apply to All",
+        "applyToAllEmployees": "Apply to All Employees",
+        "applyToAllTooltip": "Apply current shift preferences to all employees",
         "showEmployees": "Show Employees",
         "hideEmployees": "Hide Employees",
         "showSidePanel": "Show Side Panel",
@@ -205,5 +208,11 @@
         "clearAllDataDescription": "This will permanently delete all schedules, employees, settings, and preferences stored in your browser. This action cannot be undone.",
         "clearAllDataConfirm": "Are you sure you want to clear all data? This action cannot be undone.",
         "dataCleared": "All data has been cleared successfully"
+    },
+    "generation": {
+        "generationFailed": "Generation failed",
+        "generationSuccess": "Schedule generated with {algorithm}",
+        "errorNotEnoughShifts": "Not enough maximum shifts available ({totalMaxShifts}) to cover all required shifts ({totalShiftsNeeded})",
+        "errorTooManyShifts": "Minimum shifts required ({totalMinShifts}) exceed total shifts needed ({totalShiftsNeeded})"
     }
 }
