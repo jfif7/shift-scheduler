@@ -163,55 +163,54 @@ export const ScheduleHistory = ({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            {t("scheduleHistory.title")}
-            {shouldShowCollapsed && activeScheduleId && (
-              <span className="text-sm font-normal text-muted-foreground">
-                -{" "}
-                {(() => {
-                  const activeSchedule = schedules.find(
-                    (s) => s.id === activeScheduleId
-                  )
-                  return activeSchedule
-                    ? `${getMonthName(activeSchedule.month, t)} ${
-                        activeSchedule.year
-                      }`
-                    : ""
-                })()}
-              </span>
-            )}
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            {shouldShowCollapsed && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onScheduleSelect(null)}
-                className="flex items-center gap-2"
-              >
-                {t("scheduleHistory.showAll")}
-              </Button>
-            )}
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="w-5 h-5" />
+          {t("scheduleHistory.title")}
+          {shouldShowCollapsed && activeScheduleId && (
+            <span className="text-sm font-normal text-muted-foreground">
+              {(() => {
+                const activeSchedule = schedules.find(
+                  (s) => s.id === activeScheduleId
+                )
+                return activeSchedule
+                  ? `${activeSchedule.name} - ${
+                      activeSchedule.year
+                    }/${getMonthName(activeSchedule.month, t)}`
+                  : ""
+              })()}
+            </span>
+          )}
+        </CardTitle>
+
+        <div className="flex items-center gap-2 pt-2">
+          {shouldShowCollapsed && (
             <Button
-              onClick={() => {
-                const { month, year } = getNextMonthYear()
-                setIsAddingSchedule(true)
-                setNewMonth(month)
-                setNewYear(year)
-                setNewName(`${year} ${getMonthName(month, t)}`)
-                setNewNameEdited(false)
-                setImportFromScheduleId("auto")
-              }}
+              variant="ghost"
               size="sm"
+              onClick={() => onScheduleSelect(null)}
               className="flex items-center gap-2"
             >
-              <Plus className="w-4 h-4" />
-              {t("scheduleHistory.addSchedule")}
+              {t("scheduleHistory.showAll")}
             </Button>
-          </div>
+          )}
+          <Button
+            onClick={() => {
+              const { month, year } = getNextMonthYear()
+              setIsAddingSchedule(true)
+              setNewMonth(month)
+              setNewYear(year)
+              setNewName(`${year} ${getMonthName(month, t)}`)
+              setNewNameEdited(false)
+              setImportFromScheduleId("auto")
+            }}
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            {t("scheduleHistory.addSchedule")}
+          </Button>
         </div>
+
         {schedules.length === 0 && (
           <p className="text-sm text-muted-foreground">
             {t("scheduleHistory.noSchedulesYet")}

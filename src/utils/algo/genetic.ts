@@ -4,7 +4,6 @@ import {
   Schedule,
   ScheduleSettings,
   OptimizedScheduleGenetic,
-  getTotalSlotsNeeded,
 } from "@/types/schedule"
 import { getDaysInMonth, isWeekend } from "../dateUtils"
 import { GeneticConfig } from "@/lib/genetic"

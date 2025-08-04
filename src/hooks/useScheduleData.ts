@@ -110,6 +110,15 @@ export const useScheduleData = () => {
     }
   }
 
+  const addPredefinedSchedule = (newSchedule: ScheduleItem): string => {
+    if (schedules.find((schedule) => schedule.id == newSchedule.id)) {
+      newSchedule.id = uuidv4()
+    }
+    setSchedules((prev) => [...prev, newSchedule])
+    setActiveScheduleId(newSchedule.id)
+    return newSchedule.id
+  }
+
   const updateSchedule = (
     scheduleId: string,
     updates: Partial<ScheduleItem>
@@ -160,6 +169,7 @@ export const useScheduleData = () => {
     activeScheduleId,
     setActiveScheduleId,
     addSchedule,
+    addPredefinedSchedule,
     deleteSchedule,
     updateSchedule,
     getActiveSchedule,

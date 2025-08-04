@@ -10,7 +10,8 @@ export const exportScheduleAsCSV = (
   settings?: ScheduleSettings
 ): void => {
   const daysInMonth = getDaysInMonth(selectedMonth, selectedYear)
-  let csvContent = "Date,Shift,Employee\n"
+  // Add UTF-8 BOM to ensure proper encoding
+  let csvContent = "\uFEFF" + "Date,Shift,Employee\n"
 
   for (let day = 1; day <= daysInMonth; day++) {
     const daySchedule = schedule[day]
@@ -21,12 +22,15 @@ export const exportScheduleAsCSV = (
     if (daySchedule?.shifts && daySchedule.shifts.length > 0) {
       // Export with shift-specific information
       daySchedule.shifts.forEach((shift, shiftIndex) => {
-        const shiftLabel = settings?.shiftLabels?.[shiftIndex] || `Shift ${shiftIndex + 1}`
-        
+        const shiftLabel =
+          settings?.shiftLabels?.[shiftIndex] || `Shift ${shiftIndex + 1}`
+
         if (shift.employeeIds.length > 0) {
           shift.employeeIds.forEach((empId) => {
             const employee = employees.find((emp) => emp.id === empId)
-            csvContent += `${dateStr},${shiftLabel},${employee?.name || "Unknown"}\n`
+            csvContent += `${dateStr},${shiftLabel},${
+              employee?.name || "Unknown"
+            }\n`
           })
         } else {
           csvContent += `${dateStr},${shiftLabel},No Assignment\n`
@@ -61,7 +65,8 @@ export const exportScheduleAsImage = (
 
   const daysInMonth = getDaysInMonth(selectedMonth, selectedYear)
   const cellWidth = 140 // Increased width for shift information
-  const cellHeight = settings?.shiftsPerDay && settings.shiftsPerDay > 1 ? 60 : 40 // Taller cells for multiple shifts
+  const cellHeight =
+    settings?.shiftsPerDay && settings.shiftsPerDay > 1 ? 60 : 40 // Taller cells for multiple shifts
   const headerHeight = 60
 
   canvas.width = Math.max(800, cellWidth * 7)
@@ -103,18 +108,19 @@ export const exportScheduleAsImage = (
     const daySchedule = schedule[day]
     if (daySchedule?.shifts && daySchedule.shifts.length > 0) {
       let yOffset = 35
-      
+
       daySchedule.shifts.forEach((shift, shiftIndex) => {
         if (shift.employeeIds.length > 0) {
           // Show shift label if multiple shifts
           if (settings?.shiftsPerDay && settings.shiftsPerDay > 1) {
-            const shiftLabel = settings.shiftLabels?.[shiftIndex] || `S${shiftIndex + 1}`
+            const shiftLabel =
+              settings.shiftLabels?.[shiftIndex] || `S${shiftIndex + 1}`
             ctx.fillStyle = "#666666"
             ctx.font = "10px Arial"
             ctx.fillText(`${shiftLabel}:`, x + 5, yOffset)
             yOffset += 12
           }
-          
+
           // Show employees (limit to first 2 to fit in cell)
           const displayEmployees = shift.employeeIds.slice(0, 2)
           displayEmployees.forEach((empId) => {
@@ -122,16 +128,21 @@ export const exportScheduleAsImage = (
             ctx.fillStyle = "#0066cc"
             ctx.font = "10px Arial"
             const name = employee?.name || "Unknown"
-            const truncatedName = name.length > 12 ? name.substring(0, 10) + "..." : name
+            const truncatedName =
+              name.length > 12 ? name.substring(0, 10) + "..." : name
             ctx.fillText(truncatedName, x + 5, yOffset)
             yOffset += 10
           })
-          
+
           // Show count if more employees
           if (shift.employeeIds.length > 2) {
             ctx.fillStyle = "#888888"
             ctx.font = "8px Arial"
-            ctx.fillText(`+${shift.employeeIds.length - 2} more`, x + 5, yOffset)
+            ctx.fillText(
+              `+${shift.employeeIds.length - 2} more`,
+              x + 5,
+              yOffset
+            )
             yOffset += 10
           }
         }

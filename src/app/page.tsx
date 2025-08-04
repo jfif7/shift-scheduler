@@ -10,7 +10,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
-  Trash2,
   History,
 } from "lucide-react"
 import { ScheduleHistory } from "@/components/schedule/ScheduleHistory"
@@ -18,6 +17,7 @@ import { EmployeeManager } from "@/components/schedule/EmployeeManager"
 import { ConstraintsPanel } from "@/components/schedule/ConstraintsPanel"
 import { ScheduleContainer } from "@/components/schedule/ScheduleContainer"
 import { LanguageSwitcher } from "@/components/LanguageSwitcher"
+import { AboutPage } from "@/components/AboutPage"
 import { useScheduleData } from "@/hooks/useScheduleData"
 import { useEmployeeManagement } from "@/hooks/useEmployeeManagement"
 import { useConstraintManagement } from "@/hooks/useConstraintManagement"
@@ -26,6 +26,7 @@ import { useCollapsibleLayout } from "@/hooks/useCollapsibleLayout"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { ScheduleSettings, ScheduleItem } from "@/types/schedule"
 
 export default function ScheduleManager() {
   const t = useTranslations()
@@ -37,6 +38,7 @@ export default function ScheduleManager() {
     activeScheduleId,
     setActiveScheduleId,
     addSchedule,
+    addPredefinedSchedule,
     deleteSchedule,
 
     // Active schedule data
@@ -77,7 +79,7 @@ export default function ScheduleManager() {
       weekendShifts: shiftsData.weekendShifts,
     }))
     setEmployees(updatedEmployees)
-    
+
     toast.success(t("employees.applyToAllEmployees"), {
       description: `${employees.length} employees updated`,
     })
@@ -147,6 +149,17 @@ export default function ScheduleManager() {
   const [leftPanelTab, setLeftPanelTab] = useState<"history" | "employees">(
     "history"
   )
+  const [activeTab, setActiveTab] = useState<string>("about")
+
+  const handleLoadDemo = (
+    schedule: ScheduleItem,
+    demoSettings: ScheduleSettings
+  ) => {
+    setSettings(demoSettings)
+    addPredefinedSchedule(schedule)
+
+    setActiveTab("setup")
+  }
 
   const onGenerateSchedule = () => {
     handleGenerateSchedule(
@@ -176,7 +189,11 @@ export default function ScheduleManager() {
 
   return (
     <div>
-      <Tabs defaultValue="about" className="space-y-0">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-0"
+      >
         <TabsList className="w-full">
           <div className="w-full flex justify-between items-center px-6">
             <div className="flex">
@@ -203,39 +220,10 @@ export default function ScheduleManager() {
         </TabsList>
 
         <TabsContent value="about" className="mt-0">
-          <div className="container mx-auto p-6 max-w-6xl">
-            <div className="space-y-6">
-              <div className="text-center max-w-3xl mx-auto">
-                <h1 className="text-4xl font-bold mb-4">{t("page.title")}</h1>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  {t("page.description")}
-                </p>
-              </div>
-
-              <div className="border-t pt-6">
-                <div className="max-w-2xl mx-auto">
-                  <h2 className="text-2xl font-semibold mb-4 text-center">
-                    {t("dataManagement.title")}
-                  </h2>
-                  <div className="bg-muted/50 rounded-lg p-6 space-y-4">
-                    <p className="text-sm text-muted-foreground">
-                      {t("dataManagement.clearAllDataDescription")}
-                    </p>
-                    <div className="flex justify-center">
-                      <Button
-                        variant="destructive"
-                        onClick={handleClearAllData}
-                        className="flex items-center gap-2"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        {t("dataManagement.clearAllData")}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <AboutPage
+            onClearAllData={handleClearAllData}
+            onLoadDemo={handleLoadDemo}
+          />
         </TabsContent>
 
         <TabsContent value="setup" className="mt-0">
