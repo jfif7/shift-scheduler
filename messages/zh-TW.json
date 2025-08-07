@@ -1,10 +1,10 @@
 {
     "app": {
-        "title": "班表管理系統"
+        "title": "醫院人力資源最佳化配置管理系統"
     },
     "page": {
-        "title": "班表管理系統",
-        "description": "管理員工班表，設定條件與偏好",
+        "title": "醫院人力資源最佳化配置管理系統",
+        "description": "管理員工班表，內建支援多種條件與偏好",
         "setup": "班表生成",
         "constraints": "條件設置"
     },
@@ -214,5 +214,9 @@
         "generationSuccess": "用{algorithm}生成完成",
         "errorNotEnoughShifts": "最大預排班數 ({totalMaxShifts}) 不足所有班次 ({totalShiftsNeeded})",
         "errorTooManyShifts": "最小預排班數 ({totalMinShifts}) 超過所有班次 ({totalShiftsNeeded})"
+    },
+    "demo": {
+        "loaded": "示範資料載入成功",
+        "loadedDescription": "前往班表生成頁面探索示範班表"
     }
 }

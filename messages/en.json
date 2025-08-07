@@ -214,5 +214,9 @@
         "generationSuccess": "Schedule generated with {algorithm}",
         "errorNotEnoughShifts": "Not enough maximum shifts available ({totalMaxShifts}) to cover all required shifts ({totalShiftsNeeded})",
         "errorTooManyShifts": "Minimum shifts required ({totalMinShifts}) exceed total shifts needed ({totalShiftsNeeded})"
+    },
+    "demo": {
+        "loaded": "Demo data loaded successfully",
+        "loadedDescription": "Navigate to Setup to explore the demo schedule"
     }
 }
