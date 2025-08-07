@@ -24,11 +24,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+class TAG:
+    WEEKEND = "tags.weekendType"
+    ROOKIE = "tags.rookie"
+    VETERAN = "tags.veteran"
+
+
 class ScheduleSolver:
     """CP-SAT based employee scheduling solver"""
-
-    # Tag constants
-    WEEKEND_TAG = "tags.weekendType"
 
     def __init__(self) -> None:
         self.model: cp_model.CpModel = cp_model.CpModel()
@@ -243,8 +246,8 @@ class ScheduleSolver:
             MIN_WEEK_SHIFT: 100,
             MAX_WEEK_SHIFT: 100,
             WEEKEND_IMBALANCE: 100,
-            ROOKIE_TAG: 100, //TODO
-            VETERAN_TAG: 100, //TODO
+            ROOKIE_TAG: 100,
+            VETERAN_TAG: 100,
             WEEKEND_SHIFT_TAG: 100,
             // Individual
             TOTAL_SHIFT_COUNT: 100,
@@ -311,7 +314,7 @@ class ScheduleSolver:
             for start_day in range(
                 1, days_in_month - settings.max_consecutive_days + 1
             ):
-                if self.WEEKEND_TAG in emp.tags and settings.max_consecutive_days == 1:
+                if TAG.WEEKEND in emp.tags and settings.max_consecutive_days == 1:
                     start_day_of_week = (first_day_of_month + start_day - 1) % 7
                     if start_day_of_week == 5:
                         continue
@@ -340,6 +343,22 @@ class ScheduleSolver:
             employees, constraints, settings, days_in_month
         )
 
+        # Rookie and Veteran tags
+        for day in range(1, days_in_month + 1):
+            for shift in range(settings.shifts_per_day):
+                rookies = []
+                veterans = []
+                for emp_idx, emp in enumerate(employees):
+                    if TAG.ROOKIE in emp.tags:
+                        rookies.append(self.work_shifts[emp_idx][day][shift])
+                for emp_idx, emp in enumerate(employees):
+                    if TAG.VETERAN in emp.tags:
+                        veterans.append(self.work_shifts[emp_idx][day][shift])
+                if rookies:
+                    self.model.Add(sum(rookies) <= 1)
+                if veterans:
+                    self.model.Add(sum(veterans) <= 1)
+
     def _add_weekly_limits(
         self,
         employees: List[Employee],
@@ -358,7 +377,7 @@ class ScheduleSolver:
             current_day = -first_day_of_month
 
             while current_day <= days_in_month:
-                # [week_start, weekend)
+                # [week_start, week_end)
                 week_start = max(1, current_day)
                 week_end = min(days_in_month + 1, week_start + 7)
 
@@ -367,11 +386,12 @@ class ScheduleSolver:
                     for day in range(week_start, week_end)
                     for shift in range(settings.shifts_per_day)
                 ]
+
                 if settings.max_shifts_per_week < 7:
                     self.model.Add(sum(week_shifts) <= settings.max_shifts_per_week)
-                shift_needed = (week_end - week_start + 1) * sum(
-                    settings.persons_per_shift
-                )
+
+                # Make sure un-full week has enough shifts
+                shift_needed = (week_end - week_start) * sum(settings.persons_per_shift)
                 if (
                     settings.min_shifts_per_week > 0
                     and shift_needed >= settings.min_shifts_per_week * len(employees)
@@ -402,7 +422,7 @@ class ScheduleSolver:
 
                     # Special case for weekend tag
                     if (
-                        self.WEEKEND_TAG in emp.tags and rest_day == 1
+                        TAG.WEEKEND in emp.tags and rest_day == 1
                     ):  # Only for immediate next day
                         # Check if today is Saturday and next_day is Sunday (consecutive weekend)
                         today_day_of_week = (first_day_of_month + day - 1) % 7
