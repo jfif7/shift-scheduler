@@ -19,7 +19,7 @@ interface LocaleContextType {
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined)
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en")
+  const [locale, setLocaleState] = useState<Locale>("zh-TW")
   const [messages, setMessages] = useState<Record<string, unknown> | null>(null)
 
   useEffect(() => {
