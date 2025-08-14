@@ -44,9 +44,6 @@ export const ScheduleHistory = ({
     useState<string>("auto")
   const t = useTranslations()
 
-  // Auto-collapse when a schedule is selected
-  const shouldShowCollapsed = activeScheduleId && !isAddingSchedule
-
   const currentDate = new Date()
   const currentMonth = currentDate.getMonth()
   const currentYear = currentDate.getFullYear()
@@ -166,33 +163,9 @@ export const ScheduleHistory = ({
         <CardTitle className="flex items-center gap-2">
           <Calendar className="w-5 h-5" />
           {t("scheduleHistory.title")}
-          {shouldShowCollapsed && activeScheduleId && (
-            <span className="text-sm font-normal text-muted-foreground">
-              {(() => {
-                const activeSchedule = schedules.find(
-                  (s) => s.id === activeScheduleId
-                )
-                return activeSchedule
-                  ? `${activeSchedule.name} - ${
-                      activeSchedule.year
-                    }/${getMonthName(activeSchedule.month, t)}`
-                  : ""
-              })()}
-            </span>
-          )}
         </CardTitle>
 
         <div className="flex items-center gap-2 pt-2">
-          {shouldShowCollapsed && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onScheduleSelect(null)}
-              className="flex items-center gap-2"
-            >
-              {t("scheduleHistory.showAll")}
-            </Button>
-          )}
           <Button
             onClick={() => {
               const { month, year } = getNextMonthYear()
@@ -217,7 +190,7 @@ export const ScheduleHistory = ({
           </p>
         )}
       </CardHeader>
-      {!shouldShowCollapsed && (
+      {
         <CardContent className="space-y-4">
           {/* Add Schedule Form */}
           {isAddingSchedule && (
@@ -428,7 +401,7 @@ export const ScheduleHistory = ({
             </div>
           )}
         </CardContent>
-      )}
+      }
     </Card>
   )
 }
