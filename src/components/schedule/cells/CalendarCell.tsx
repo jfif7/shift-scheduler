@@ -59,7 +59,7 @@ export const CalendarCell = ({
 
   return (
     <div className={cn(cellClasses)}>
-      <div className="mb-1 relative flex justify-center items-center">
+      <div className="relative flex justify-center items-center">
         {/* Day number header - always centered */}
         <span className="text-sm font-medium">{day}</span>
         {/* Day-level constraint button for multi-shift days */}
@@ -91,7 +91,7 @@ export const CalendarCell = ({
 
           // Build class names for shift container
           const shiftClasses = [
-            "text-xs border min-h-6 cursor-pointer transition-colors relative",
+            "text-xs border min-h-12 cursor-pointer transition-colors relative",
           ]
           if (showShiftColors && settings.shiftsPerDay > 1) {
             shiftClasses.push(`shift-${shiftIndex}`)
