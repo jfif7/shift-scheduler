@@ -1,30 +1,17 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shift Scheduler
 
-## Getting Started
+醫院人力排班系統
 
-First, run the development server:
+## Demo
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+[jfif7.github.io/shift-scheduler/](https://jfif7.github.io/shift-scheduler/)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- 班表需求客製化：連續值班限制，勞基法限制，人數需求
+- 員工需求客製化：更改員工一個月班次，預值/預假需求
+- 一鍵生成班表及匯出：就很方便
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+![screenshot1](https://cdn.discordapp.com/attachments/995580744246239244/1411612261511860314/image.png?ex=68b549dd&is=68b3f85d&hm=8c83b2dbd504cbc772c7b759fc8b8999a3c1118002137e52861cca5982a42906)
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+![screenshot2](https://cdn.discordapp.com/attachments/995580744246239244/1411612904041746482/image.png?ex=68b54a76&is=68b3f8f6&hm=d5caede85e1b622df442b04fe667ff1401f7df02461e8526e3a5e19cf2811e48)
