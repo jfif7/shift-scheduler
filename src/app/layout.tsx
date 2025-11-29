@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { Toaster } from "@/components/ui/sonner"
 import { LocaleProvider } from "@/contexts/LocaleContext"
+import { AuthProvider } from "@/contexts/AuthContext"
+import { AuthGuard } from "@/components/auth/AuthGuard"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -16,12 +18,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <LocaleProvider>
-          <div className="min-h-screen bg-background">
-            <main>{children}</main>
-          </div>
-          <Toaster />
-        </LocaleProvider>
+        <AuthProvider>
+          <LocaleProvider>
+            <AuthGuard>
+              <div className="min-h-screen bg-background">
+                <main>{children}</main>
+              </div>
+            </AuthGuard>
+            <Toaster />
+          </LocaleProvider>
+        </AuthProvider>
       </body>
     </html>
   )

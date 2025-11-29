@@ -17,6 +17,7 @@ import { EmployeeManager } from "@/components/schedule/EmployeeManager"
 import { ConstraintsPanel } from "@/components/schedule/ConstraintsPanel"
 import { ScheduleContainer } from "@/components/schedule/ScheduleContainer"
 import { LanguageSwitcher } from "@/components/LanguageSwitcher"
+import { AuthStatus } from "@/components/auth/AuthStatus"
 import { AboutPage } from "@/components/AboutPage"
 import { useScheduleData } from "@/hooks/useScheduleData"
 import { useEmployeeManagement } from "@/hooks/useEmployeeManagement"
@@ -213,8 +214,9 @@ export default function ScheduleManager() {
                 {t("page.constraints")}
               </TabsTrigger>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
               <LanguageSwitcher />
+              <AuthStatus />
             </div>
           </div>
         </TabsList>

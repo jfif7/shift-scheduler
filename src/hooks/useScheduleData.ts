@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { v4 as uuidv4 } from "uuid"
 import {
   ScheduleData,
@@ -8,10 +8,19 @@ import {
   Constraint,
   Schedule,
 } from "@/types/schedule"
+import { useAuth } from "@/contexts/AuthContext"
+import {
+  loadUserSchedules,
+  saveSchedule as saveToFirestore,
+  deleteSchedule as deleteFromFirestore,
+  subscribeToUserSchedules,
+  loadUserSettings,
+  saveUserSettings,
+} from "@/services/firestoreAPI"
 
 const DEFAULT_SETTINGS: ScheduleSettings = {
   shiftsPerDay: 1,
-  personsPerShift: [1], // Array format for compatibility
+  personsPerShift: [1],
   maxConsecutiveShifts: 3,
   maxConsecutiveDays: 6,
   minRestDaysBetweenShifts: 0,
@@ -24,27 +33,29 @@ const DEFAULT_SETTINGS: ScheduleSettings = {
 }
 
 export const useScheduleData = () => {
+  const { user } = useAuth()
   const [schedules, setSchedules] = useState<ScheduleItem[]>([])
   const [activeScheduleId, setActiveScheduleId] = useState<string | null>(null)
   const [settings, setSettings] = useState<ScheduleSettings>(DEFAULT_SETTINGS)
   const [loaded, setLoaded] = useState<boolean>(false)
 
-  useEffect(() => {
-    loadFromLocalStorage()
-    setLoaded(true)
-  }, [])
+  const loadFromFirestore = useCallback(async () => {
+    if (!user) return
 
-  // Save to localStorage whenever data changes
-  useEffect(() => {
-    if (loaded === false) return
-    const data: ScheduleData = {
-      schedules,
-      settings,
+    try {
+      const firestoreSchedules = await loadUserSchedules(user.uid)
+      setSchedules(firestoreSchedules)
+
+      const userSettings = await loadUserSettings(user.uid)
+      if (userSettings?.scheduleSettings) {
+        setSettings({ ...DEFAULT_SETTINGS, ...userSettings.scheduleSettings })
+      }
+    } catch (error) {
+      console.error("Error loading from Firestore:", error)
     }
-    localStorage.setItem("scheduleData", JSON.stringify(data))
-  }, [schedules, settings, loaded])
+  }, [user])
 
-  const loadFromLocalStorage = () => {
+  const loadFromLocalStorage = useCallback(() => {
     const saved = localStorage.getItem("scheduleData")
     if (saved) {
       try {
@@ -63,22 +74,74 @@ export const useScheduleData = () => {
         console.error("Error loading from localStorage:", error)
       }
     }
-  }
+  }, [])
 
-  const addSchedule = (
+  useEffect(() => {
+    const loadData = async () => {
+      if (user) {
+        await loadFromFirestore()
+      } else {
+        loadFromLocalStorage()
+      }
+      setLoaded(true)
+    }
+
+    loadData()
+  }, [user, loadFromFirestore, loadFromLocalStorage])
+
+  useEffect(() => {
+    if (!user || !loaded) return
+
+    const unsubscribe = subscribeToUserSchedules(
+      user.uid,
+      (firestoreSchedules) => {
+        setSchedules(firestoreSchedules)
+      }
+    )
+
+    return () => unsubscribe()
+  }, [user, loaded])
+
+  useEffect(() => {
+    if (loaded === false || user) return
+
+    const data: ScheduleData = {
+      schedules,
+      settings,
+    }
+    localStorage.setItem("scheduleData", JSON.stringify(data))
+  }, [schedules, settings, loaded, user])
+
+  useEffect(() => {
+    if (!user || !loaded) return
+
+    const saveSettings = async () => {
+      try {
+        await saveUserSettings(user.uid, {
+          locale: "zh-TW",
+          preferences: {},
+          scheduleSettings: settings,
+        })
+      } catch (error) {
+        console.error("Error saving settings to Firestore:", error)
+      }
+    }
+
+    saveSettings()
+  }, [settings, user, loaded])
+
+  const addSchedule = async (
     month: number,
     year: number,
     name: string,
     importFromScheduleId?: string
-  ): string => {
-    // Get employees to import if specified
+  ): Promise<string> => {
     let employeesToImport: Employee[] = []
     if (importFromScheduleId) {
       const sourceSchedule = schedules.find(
         (s) => s.id === importFromScheduleId
       )
       if (sourceSchedule && sourceSchedule.employees.length > 0) {
-        // Create independent copies of employees with new IDs
         employeesToImport = sourceSchedule.employees.map((employee) => ({
           ...employee,
           id: uuidv4(),
@@ -87,7 +150,7 @@ export const useScheduleData = () => {
     }
 
     const newSchedule: ScheduleItem = {
-      id: uuidv4(),
+      id: user ? "new" : uuidv4(),
       name,
       month,
       year,
@@ -98,20 +161,31 @@ export const useScheduleData = () => {
       isGenerated: false,
     }
 
-    setSchedules((prev) => [...prev, newSchedule])
-    setActiveScheduleId(newSchedule.id)
-    return newSchedule.id
+    if (user) {
+      const firestoreId = await saveToFirestore(user.uid, newSchedule)
+      setActiveScheduleId(firestoreId)
+      return firestoreId
+    } else {
+      setSchedules((prev) => [...prev, newSchedule])
+      setActiveScheduleId(newSchedule.id)
+      return newSchedule.id
+    }
   }
 
-  const deleteSchedule = (scheduleId: string) => {
-    setSchedules((prev) => prev.filter((s) => s.id !== scheduleId))
+  const deleteSchedule = async (scheduleId: string) => {
+    if (user) {
+      await deleteFromFirestore(scheduleId)
+    } else {
+      setSchedules((prev) => prev.filter((s) => s.id !== scheduleId))
+    }
+
     if (activeScheduleId === scheduleId) {
       setActiveScheduleId(null)
     }
   }
 
   const addPredefinedSchedule = (newSchedule: ScheduleItem): string => {
-    if (schedules.find((schedule) => schedule.id == newSchedule.id)) {
+    if (schedules.find((schedule) => schedule.id === newSchedule.id)) {
       newSchedule.id = uuidv4()
     }
     setSchedules((prev) => [...prev, newSchedule])
@@ -119,22 +193,29 @@ export const useScheduleData = () => {
     return newSchedule.id
   }
 
-  const updateSchedule = (
+  const updateSchedule = async (
     scheduleId: string,
     updates: Partial<ScheduleItem>
   ) => {
-    setSchedules((prev) =>
-      prev.map((schedule) =>
-        schedule.id === scheduleId ? { ...schedule, ...updates } : schedule
+    if (user) {
+      const scheduleToUpdate = schedules.find((s) => s.id === scheduleId)
+      if (scheduleToUpdate) {
+        const updatedSchedule = { ...scheduleToUpdate, ...updates }
+        await saveToFirestore(user.uid, updatedSchedule)
+      }
+    } else {
+      setSchedules((prev) =>
+        prev.map((schedule) =>
+          schedule.id === scheduleId ? { ...schedule, ...updates } : schedule
+        )
       )
-    )
+    }
   }
 
   const getActiveSchedule = (): ScheduleItem | null => {
     return schedules.find((s) => s.id === activeScheduleId) || null
   }
 
-  // Derived values for active schedule
   const activeSchedule = getActiveSchedule()
   const selectedMonth = activeSchedule?.month || 0
   const selectedYear = activeSchedule?.year || 0
@@ -164,7 +245,6 @@ export const useScheduleData = () => {
   }
 
   return {
-    // Schedule history management
     schedules,
     activeScheduleId,
     setActiveScheduleId,
@@ -174,7 +254,6 @@ export const useScheduleData = () => {
     updateSchedule,
     getActiveSchedule,
 
-    // Active schedule data
     selectedMonth,
     selectedYear,
     employees,
@@ -184,7 +263,6 @@ export const useScheduleData = () => {
     schedule,
     setSchedule,
 
-    // Global settings
     settings,
     setSettings,
   }
