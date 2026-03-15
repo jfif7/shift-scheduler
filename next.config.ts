@@ -3,7 +3,7 @@ import createNextIntlPlugin from "next-intl/plugin"
 
 const nextConfig: NextConfig = {
   output: "export",
-  basePath: process.env.NODE_ENV === "development" ? "" : "/shift-scheduler",
+  basePath: "",
   trailingSlash: true,
   distDir: "dist",
   images: {
