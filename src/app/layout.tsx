@@ -17,6 +17,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8612728828421603"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         <AuthProvider>
           <LocaleProvider>
