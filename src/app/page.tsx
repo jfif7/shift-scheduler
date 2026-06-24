@@ -276,7 +276,7 @@ export default function ScheduleManager() {
                 >
                   {/* Side Panel with Tabs - Conditional Rendering */}
                   {!isSidePanelCollapsed && (
-                    <div className="transition-all duration-300">
+                    <div className="transition-all duration-300 flex flex-col gap-4">
                       <Tabs
                         value={leftPanelTab}
                         onValueChange={(value) =>
