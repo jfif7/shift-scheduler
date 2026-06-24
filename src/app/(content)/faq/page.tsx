@@ -70,8 +70,7 @@ export default function FaqPage() {
       </div>
 
       <div className="my-10">
-        {/* TODO: replace slot with a real ad-unit id from the AdSense dashboard */}
-        <AdUnit slot="0000000000" />
+        <AdUnit slot="2129364108" />
       </div>
     </article>
   )

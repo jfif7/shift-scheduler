@@ -20,15 +20,18 @@ export default function AboutPage() {
       </p>
 
       <p className="mt-4 leading-8">
-        系統結合了業界常用的最佳化技術（Google OR-Tools 的 CP-SAT 求解器）與瀏覽器端演算法，讓使用者不需要任何專業背景，就能產生高品質、可匯出的班表。想進一步了解運作方式，請參考
-        <a href="/how-it-works" className="underline underline-offset-4">運作原理</a>。
+        系統結合了業界常用的最佳化技術（Google OR-Tools 的 CP-SAT
+        求解器）與瀏覽器端演算法，讓使用者不需要任何專業背景，就能產生高品質、可匯出的班表。想進一步了解運作方式，請參考
+        <a href="/how-it-works" className="underline underline-offset-4">
+          運作原理
+        </a>
+        。
       </p>
 
       <h2 className="mt-10 text-2xl font-semibold">聯絡我們</h2>
       <p className="mt-4 leading-8">
         如有任何問題、建議或合作需求，歡迎來信：
-        {/* TODO: 填入正式聯絡 Email */}
-        <span className="font-medium">［請填入聯絡 Email］</span>
+        <span className="font-medium">email@onino.tw</span>
       </p>
     </article>
   )
