@@ -24,12 +24,7 @@ RUN useradd --create-home --shell /bin/bash app
 RUN chown -R app:app /app
 USER app
 
-# Expose ports
-EXPOSE 8211
-
-# Health check - try HTTPS first, then HTTP
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f -k https://localhost:8211/health || curl -f http://localhost:8211/health || exit 1
-
-# Run the application using main.py to handle SSL configuration
+# Cloud Run sets the PORT environment variable (default 8080)
+# main.py reads it via os.getenv("PORT", "8211")
 CMD ["python", "main.py"]
+
