@@ -10,3 +10,10 @@ __pycache__
 .env
 .env.production
 docs
+
+# Claude Code tooling & externally-installed skills (keep only authored project skills)
+.agents/
+skills-lock.json
+.claude/worktrees/
+.claude/skills/*
+!.claude/skills/run-app/
