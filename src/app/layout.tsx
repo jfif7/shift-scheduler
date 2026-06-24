@@ -1,9 +1,20 @@
 import type { Metadata } from "next"
+import { Geist, Geist_Mono } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
 import { LocaleProvider } from "@/contexts/LocaleContext"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { AuthGuard } from "@/components/auth/AuthGuard"
 import "./globals.css"
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+})
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+})
 
 export const metadata: Metadata = {
   title: "班表管理系統",
@@ -16,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
         <script
           async
@@ -24,7 +35,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body>
+      <body className="font-sans antialiased">
         <AuthProvider>
           <LocaleProvider>
             <AuthGuard>
