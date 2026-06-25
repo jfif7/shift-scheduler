@@ -359,6 +359,30 @@ class ScheduleSolver:
                 if veterans:
                     self.model.Add(sum(veterans) <= 1)
 
+    def _weekly_windows(
+        self, days_in_month: int, month: int, year: int
+    ) -> List[Tuple[int, int]]:
+        """Calendar-week windows ``[start, end)`` used for weekly shift limits.
+
+        Weeks are anchored on Sundays, so the first and last weeks of a month
+        may be partial. The windows partition the month exactly once -- each
+        ``week_end`` is taken from the raw Sunday anchor (``current_day + 7``),
+        not the clamped ``week_start``, so the first partial week does not spill
+        into the next one. Pinned by
+        tests/test_doctor_nurse.py::test_weekly_windows_match_intended_sunday_partition.
+        """
+        first_day_of_month = get_first_day_of_month(month, year)
+
+        windows: List[Tuple[int, int]] = []
+        # Sunday-anchored: start 7 days before day 1's offset into its week.
+        current_day = -first_day_of_month
+        while current_day <= days_in_month:
+            week_start = max(1, current_day)
+            week_end = min(days_in_month + 1, current_day + 7)
+            windows.append((week_start, week_end))
+            current_day = current_day + 7
+        return windows
+
     def _add_weekly_limits(
         self,
         employees: List[Employee],
@@ -368,19 +392,9 @@ class ScheduleSolver:
         year: int,
     ) -> None:
         """Add weekly shift limit constraints"""
+        windows = self._weekly_windows(days_in_month, month, year)
         for emp_idx in range(len(employees)):
-            # Get the day of week for the 1st of the month (0=Monday, 6=Sunday)
-            first_day_of_month = get_first_day_of_month(month, year)
-
-            # Calculate proper week boundaries based on actual calendar weeks
-            # We'll consider Sunday as the start of the week
-            current_day = -first_day_of_month
-
-            while current_day <= days_in_month:
-                # [week_start, week_end)
-                week_start = max(1, current_day)
-                week_end = min(days_in_month + 1, week_start + 7)
-
+            for week_start, week_end in windows:
                 week_shifts = [
                     self.work_shifts[emp_idx][day][shift]
                     for day in range(week_start, week_end)
@@ -397,8 +411,6 @@ class ScheduleSolver:
                     and shift_needed >= settings.min_shifts_per_week * len(employees)
                 ):
                     self.model.Add(sum(week_shifts) >= settings.min_shifts_per_week)
-
-                current_day = current_day + 7
 
     def _add_rest_day_constraints(
         self,
