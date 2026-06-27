@@ -146,6 +146,21 @@
         "prevented": "Prevented",
         "allowed": "Allowed"
     },
+    "labor": {
+        "title": "Labor-law compliance (Taiwan 勞基法)",
+        "regime": "Working-time regime",
+        "regimeNone": "None (no legal floor)",
+        "regimeStandard": "Standard 一例一休 (≤5 consecutive days)",
+        "regimeFourWeek": "4-week flexible 四週變形 (≤12 consecutive days)",
+        "regimeDescription": {
+            "none": "No labor-law rule is enforced beyond the settings above.",
+            "standard": "§36 一例一休: at least 2 days off in every rolling 7 days.",
+            "four_week_flexible": "§30-1 四週變形 (medical): ≥2 days off per 14 days and ≥8 per 28 days (≤12 consecutive)."
+        },
+        "hoursNote": "Hour-based rules (§34 11h inter-shift rest; §30/§32 hours & overtime) are not modeled and remain the operator's responsibility.",
+        "warnConsecutiveDays": "Max consecutive days ({value}) exceeds the regime limit of {ceiling}; the schedule will be tightened to {ceiling}.",
+        "warnMaxShiftsPerWeek": "Max shifts per week ({value}) is looser than 一例一休 (≤5); the schedule will be tightened to fit the rest-day rule."
+    },
     "toast": {
         "noSchedule": "No schedule",
         "pleaseGenerateFirst": "Please generate a schedule first.",

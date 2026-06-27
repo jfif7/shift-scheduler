@@ -75,6 +75,14 @@ class ScheduleSettings(BaseModel):
         default="balanced",
         description="Optimization goal: 'balanced', 'minimal_cost', 'max_coverage'",
     )
+    labor_regime: str = Field(
+        default="none",
+        description=(
+            "Taiwan LSA day-based working-time regime to enforce as a hard floor: "
+            "'none' | 'standard' (一例一休, >=2 days off / rolling 7 days) | "
+            "'four_week_flexible' (四週變形, <=12 consecutive days, >=8 off / 4 weeks)"
+        ),
+    )
 
 
 class GenerateScheduleRequest(BaseModel):
@@ -106,6 +114,10 @@ class SolverMetadata(BaseModel):
     objective_value: int
     constraints_satisfied: bool
     algorithm: str = "cp-sat"
+    compliance_notes: List[str] = Field(
+        default_factory=list,
+        description="Warnings when settings are looser than the chosen labor_regime",
+    )
 
 
 class GenerateScheduleResponse(BaseModel):

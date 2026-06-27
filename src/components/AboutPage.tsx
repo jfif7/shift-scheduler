@@ -66,7 +66,7 @@ export function AboutPage({ onClearAllData, onLoadDemo }: AboutPageProps) {
       description: "三班制護理師排班，24小時覆蓋，包含早班、晚班和夜班。",
       features: [
         "早班6人、晚班4人、夜班3人的三班制",
-        "最多連續工作6天（勞基法）",
+        "最多連續工作6天（符合勞基法七休一上限）",
         "每週工作2-6個班次",
         "點擊班次圖例可以一鍵調整全部班次條件",
       ],

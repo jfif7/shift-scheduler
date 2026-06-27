@@ -23,7 +23,7 @@ HOW TO ADD YOUR OWN TEST CASE
 
 import pytest
 
-from services.cp_sat_solver import TAG, ScheduleSolver
+from services.cp_sat_solver import TAG, ScheduleSolver, check_settings_compliance
 from tests.scenario_framework import (
     Scenario,
     make_employee,
@@ -43,6 +43,8 @@ from tests.scenario_framework import (
     check_monthly_bounds,
     check_one_shift_per_day,
     check_rookie_veteran_caps,
+    check_regime_offday_windows,
+    check_regime_consecutive_ceiling,
 )
 
 # The demos are scheduled for August 2025 (month is 0-based, so 7 = August).
@@ -392,3 +394,114 @@ def test_weekly_windows_match_intended_sunday_partition():
     assert solver._weekly_windows(days, month, year) == correct_weekly_windows(
         days, month, year
     )
+
+
+# ===========================================================================
+# Taiwan labor-law (勞動基準法) day-based regimes
+# ---------------------------------------------------------------------------
+# A regime is a hard floor enforced for every employee. The two regime checkers
+# are in the hard battery, so any scenario with labor_regime set is verified
+# against its rolling off-day windows + consecutive-day ceiling automatically.
+#   standard           -> 一例一休: >=2 days off / rolling 7 days (<=5 consec)
+#   four_week_flexible -> 四週變形: >=2 off/14d, >=8 off/28d (<=12 consec)
+# ===========================================================================
+
+def _doctor_standard_regime() -> Scenario:
+    base = _doctor_scenario()
+    return Scenario(
+        id="doctor_standard_regime",
+        description="Doctor demo under the standard 一例一休 regime.",
+        employees=base.employees,
+        settings=base.settings.model_copy(update={"labor_regime": "standard"}),
+        constraints=base.constraints,
+        month=AUGUST,
+        year=YEAR,
+        timeout=30,
+    )
+
+
+def _nurse_four_week_regime() -> Scenario:
+    return Scenario(
+        id="nurse_four_week_regime",
+        description="Nurse demo under the 四週變形 regime (medical, <=12 consecutive).",
+        employees=_nurse_team(),
+        settings=_nurse_settings().model_copy(
+            update={"labor_regime": "four_week_flexible"}
+        ),
+        constraints=[],
+        month=AUGUST,
+        year=YEAR,
+        timeout=60,
+    )
+
+
+def _standard_infeasible_when_overpacked() -> Scenario:
+    # 7 staff, one shift needing 6 of them every day -> each works ~6 of every 7
+    # days. The standard regime demands >=2 days off per rolling 7 days, i.e.
+    # 14 off-slots per 7-day window across the team, but only 7 exist. So a
+    # roster that is feasible WITHOUT the regime becomes infeasible WITH it --
+    # this is the test that pins the regime constraint actually doing work.
+    employees = make_team(7, name_prefix="D", shifts=(0, 31),
+                          weekday=(0, 31), weekend=(0, 31))
+    return Scenario(
+        id="standard_infeasible_when_overpacked",
+        description="6-of-7 every day cannot satisfy 一例一休 -> infeasible.",
+        employees=employees,
+        settings=make_settings(shifts_per_day=1, persons_per_shift=[6],
+                               max_consecutive_days=7, labor_regime="standard"),
+        month=AUGUST,
+        year=YEAR,
+        expect_feasible=False,
+        timeout=20,
+    )
+
+
+REGIME_SCENARIOS = [
+    _doctor_standard_regime(),
+    _nurse_four_week_regime(),
+    _standard_infeasible_when_overpacked(),
+]
+
+
+@pytest.mark.parametrize("scenario", REGIME_SCENARIOS, ids=lambda s: s.id)
+def test_labor_regime_scenarios(scenario):
+    assert_scenario(scenario)
+
+
+def test_settings_compliance_warns_when_looser_than_regime():
+    settings = make_settings(shifts_per_day=1, persons_per_shift=[1],
+                             max_consecutive_days=7, labor_regime="standard")
+    notes = check_settings_compliance(settings)
+    assert any("exceeds" in n for n in notes), notes
+
+
+def test_settings_compliance_is_silent_without_a_regime():
+    settings = make_settings(shifts_per_day=1, persons_per_shift=[1],
+                             max_consecutive_days=7, labor_regime="none")
+    assert check_settings_compliance(settings) == []
+
+
+def test_selfcheck_regime_offday_window_detects_overwork():
+    emp = make_employee("Packed", shifts=(0, 31))
+    scenario = Scenario(
+        id="sc", description="", employees=[emp],
+        settings=make_settings(shifts_per_day=1, persons_per_shift=[1],
+                               labor_regime="standard"),
+        month=AUGUST, year=YEAR,
+    )
+    bad = _fake_result({d: [[emp.id]] for d in range(1, 7)})  # 1 off in days 1-7
+    with pytest.raises(AssertionError, match="requires >= 2"):
+        check_regime_offday_windows(bad, scenario)
+
+
+def test_selfcheck_regime_consecutive_ceiling_detects_long_streak():
+    emp = make_employee("Streak", shifts=(0, 31))
+    scenario = Scenario(
+        id="sc", description="", employees=[emp],
+        settings=make_settings(shifts_per_day=1, persons_per_shift=[1],
+                               labor_regime="standard"),
+        month=AUGUST, year=YEAR,
+    )
+    bad = _fake_result({d: [[emp.id]] for d in range(1, 7)})  # 6 consec, cap 5
+    with pytest.raises(AssertionError, match="consecutive working days exceeds"):
+        check_regime_consecutive_ceiling(bad, scenario)

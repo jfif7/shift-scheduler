@@ -30,6 +30,7 @@ const DEFAULT_SETTINGS: ScheduleSettings = {
   evenDistribution: true,
   shiftLabels: ["Shift 1"],
   preferredAlgorithm: "auto",
+  laborRegime: "none",
 }
 
 export const useScheduleData = () => {

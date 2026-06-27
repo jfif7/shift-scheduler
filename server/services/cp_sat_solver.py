@@ -30,6 +30,55 @@ class TAG:
     VETERAN = "tags.veteran"
 
 
+# Taiwan Labor Standards Act (勞動基準法) day-based working-time regimes.
+#
+# Each regime is a list of rolling-window floors ``(window_days, min_off_days)``:
+# in EVERY window of ``window_days`` consecutive calendar days, an employee must
+# have at least ``min_off_days`` days off. These encode only the DAY-based rules
+# the shift-count model can express:
+#   * standard            -- §36 一例一休: >=2 days off per rolling 7 days
+#                            (implies <= 5 consecutive working days).
+#   * four_week_flexible  -- §30-1 四週變形 (醫療保健服務業): >=2 off / 14 days and
+#                            >=8 off / 28 days (implies <= 12 consecutive days).
+# Hour-based rules (§34 11h inter-shift rest, §30/§32 daily/weekly hours and
+# overtime) cannot be modeled here -- there is no concept of shift time.
+LABOR_REGIMES: Dict[str, List[Tuple[int, int]]] = {
+    "standard": [(7, 2)],
+    "four_week_flexible": [(14, 2), (28, 8)],
+}
+
+
+def regime_max_consecutive_days(regime: str) -> Optional[int]:
+    """Longest legal consecutive-work run implied by a regime, or None for an
+    unknown / 'none' regime."""
+    windows = LABOR_REGIMES.get(regime)
+    if not windows:
+        return None
+    return min(window_len - min_off for window_len, min_off in windows)
+
+
+def check_settings_compliance(settings: ScheduleSettings) -> List[str]:
+    """Advisory warnings when user settings are looser than the chosen
+    ``labor_regime``. The solver still enforces the regime as a hard floor; these
+    notes just explain what was (or should be) tightened. Empty when no regime."""
+    regime = getattr(settings, "labor_regime", "none")
+    if regime not in LABOR_REGIMES:
+        return []
+    notes: List[str] = []
+    ceiling = regime_max_consecutive_days(regime)
+    if ceiling is not None and settings.max_consecutive_days > ceiling:
+        notes.append(
+            f"max_consecutive_days={settings.max_consecutive_days} exceeds the "
+            f"'{regime}' legal limit of {ceiling} consecutive days; the schedule "
+            f"is tightened to {ceiling}."
+        )
+    notes.append(
+        "Hour-based rules (§34 11h inter-shift rest; §30/§32 daily/weekly hours "
+        "and overtime) are not modeled and remain the operator's responsibility."
+    )
+    return notes
+
+
 class ScheduleSolver:
     """CP-SAT based employee scheduling solver"""
 
@@ -140,6 +189,7 @@ class ScheduleSolver:
                             else 0
                         ),
                         constraints_satisfied=True,
+                        compliance_notes=check_settings_compliance(settings),
                     ),
                     message=f"Schedule generated successfully in {solve_time:.2f} seconds",
                 )
@@ -158,6 +208,7 @@ class ScheduleSolver:
                         solve_time=solve_time,
                         objective_value=-1,
                         constraints_satisfied=False,
+                        compliance_notes=check_settings_compliance(settings),
                     ),
                     message=f"Could not find feasible solution: {status_name}",
                 )
@@ -358,6 +409,40 @@ class ScheduleSolver:
                     self.model.Add(sum(rookies) <= 1)
                 if veterans:
                     self.model.Add(sum(veterans) <= 1)
+
+        # Taiwan LSA day-based working-time regime (hard rolling-window floors)
+        self._add_labor_regime_constraints(employees, settings, days_in_month)
+
+    def _add_labor_regime_constraints(
+        self,
+        employees: List[Employee],
+        settings: ScheduleSettings,
+        days_in_month: int,
+    ) -> None:
+        """Enforce the selected ``labor_regime`` as hard rolling-window off-day
+        floors. For every employee and every window of ``window_len`` consecutive
+        days, at least ``min_off`` of those days must be days off (``sum(work) <=
+        window_len - min_off``).
+
+        These are statutory minima, so they apply to EVERY employee -- the
+        ``tags.weekendType`` rest exemption used elsewhere does NOT apply here.
+        """
+        regime = getattr(settings, "labor_regime", "none")
+        windows = LABOR_REGIMES.get(regime)
+        if not windows:
+            return
+
+        for emp_idx in range(len(employees)):
+            for window_len, min_off in windows:
+                if window_len > days_in_month:
+                    continue
+                max_work = window_len - min_off
+                for start in range(1, days_in_month - window_len + 2):
+                    work_vars = [
+                        self.work_days[emp_idx][day]
+                        for day in range(start, start + window_len)
+                    ]
+                    self.model.Add(sum(work_vars) <= max_work)
 
     def _weekly_windows(
         self, days_in_month: int, month: int, year: int

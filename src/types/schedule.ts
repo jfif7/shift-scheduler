@@ -50,6 +50,10 @@ export interface ScheduleSettings {
   evenDistribution: boolean
   shiftLabels?: string[] // Optional shift naming/labeling
   preferredAlgorithm: "auto" | "cp-sat" | "genetic" | "simulated-annealing" // Algorithm preference
+  // Taiwan LSA day-based working-time regime enforced as a hard floor.
+  // none = no extra rule; standard = 一例一休 (>=2 off / 7 days);
+  // four_week_flexible = 四週變形 (<=12 consecutive days). CP-SAT solver only.
+  laborRegime?: "none" | "standard" | "four_week_flexible"
 }
 
 export interface ScheduleItem {

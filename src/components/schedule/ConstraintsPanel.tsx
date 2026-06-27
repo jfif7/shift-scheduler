@@ -4,6 +4,7 @@ import { NumberInput } from "@/components/ui/number-input"
 import { TextInput } from "@/components/ui/text-input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScheduleSettings } from "@/types/schedule"
+import { checkCompliance } from "@/utils/laborCompliance"
 import { useTranslations } from "next-intl"
 import { ServerStatus } from "./ServerStatus"
 
@@ -17,6 +18,9 @@ export const ConstraintsPanel = ({
   onSettingsChange,
 }: ConstraintsPanelProps) => {
   const t = useTranslations()
+
+  const laborRegime = settings.laborRegime ?? "none"
+  const complianceWarnings = checkCompliance(settings)
 
   const updateSetting = <K extends keyof ScheduleSettings>(
     key: K,
@@ -257,6 +261,55 @@ export const ConstraintsPanel = ({
               <p className="text-xs text-muted-foreground">
                 {t("constraints.maxShiftsPerWeekDescription")}
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Labor-law compliance (勞基法) */}
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-medium mb-4">{t("labor.title")}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="laborRegime">{t("labor.regime")}</Label>
+              <Select
+                value={laborRegime}
+                onValueChange={(value) =>
+                  updateSetting(
+                    "laborRegime",
+                    value as "none" | "standard" | "four_week_flexible"
+                  )
+                }
+              >
+                <SelectTrigger id="laborRegime">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("labor.regimeNone")}</SelectItem>
+                  <SelectItem value="standard">
+                    {t("labor.regimeStandard")}
+                  </SelectItem>
+                  <SelectItem value="four_week_flexible">
+                    {t("labor.regimeFourWeek")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {t(`labor.regimeDescription.${laborRegime}`)}
+              </p>
+            </div>
+            <div className="space-y-2">
+              {complianceWarnings.length > 0 && (
+                <ul className="text-xs text-destructive space-y-1 list-disc pl-4">
+                  {complianceWarnings.map((w, i) => (
+                    <li key={i}>{t(w.key, w.values)}</li>
+                  ))}
+                </ul>
+              )}
+              {laborRegime !== "none" && (
+                <p className="text-xs text-muted-foreground">
+                  {t("labor.hoursNote")}
+                </p>
+              )}
             </div>
           </div>
         </div>

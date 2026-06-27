@@ -55,7 +55,12 @@ from models.schedule_models import (
     ScheduleSettings,
     GenerateScheduleResponse,
 )
-from services.cp_sat_solver import ScheduleSolver, TAG
+from services.cp_sat_solver import (
+    ScheduleSolver,
+    TAG,
+    LABOR_REGIMES,
+    regime_max_consecutive_days,
+)
 from utils.date_utils import get_days_in_month, get_first_day_of_month, is_weekend
 
 
@@ -122,9 +127,11 @@ def make_settings(
     even_distribution: bool = True,
     fairness_weight: int = 1,
     preference_weight: int = 1,
+    labor_regime: str = "none",
 ) -> ScheduleSettings:
     """Create settings with sensible defaults. ``persons_per_shift`` defaults
-    to one person on each shift."""
+    to one person on each shift. ``labor_regime`` selects a day-based LSA regime
+    ('none' | 'standard' | 'four_week_flexible')."""
     if persons_per_shift is None:
         persons_per_shift = [1] * shifts_per_day
     return ScheduleSettings(
@@ -139,6 +146,7 @@ def make_settings(
         even_distribution=even_distribution,
         fairness_weight=fairness_weight,
         preference_weight=preference_weight,
+        labor_regime=labor_regime,
     )
 
 
@@ -461,6 +469,48 @@ def check_max_shifts_per_week(
             )
 
 
+def check_regime_offday_windows(
+    result: GenerateScheduleResponse, scenario: Scenario
+) -> None:
+    # Statutory day-off floors apply to EVERY employee (no weekendType exemption).
+    windows = LABOR_REGIMES.get(getattr(scenario.settings, "labor_regime", "none"))
+    if not windows:
+        return
+    days = scenario.days_in_month
+    for emp in scenario.employees:
+        worked = set(days_worked(result, emp.id))
+        for window_len, min_off in windows:
+            if window_len > days:
+                continue
+            for start in range(1, days - window_len + 2):
+                work_in_window = sum(
+                    1 for d in range(start, start + window_len) if d in worked
+                )
+                off = window_len - work_in_window
+                assert off >= min_off, (
+                    f"{emp.name}: only {off} day(s) off in window "
+                    f"[{start},{start + window_len}) -- "
+                    f"'{scenario.settings.labor_regime}' requires >= {min_off} "
+                    f"per {window_len} days"
+                )
+
+
+def check_regime_consecutive_ceiling(
+    result: GenerateScheduleResponse, scenario: Scenario
+) -> None:
+    ceiling = regime_max_consecutive_days(
+        getattr(scenario.settings, "labor_regime", "none")
+    )
+    if ceiling is None:
+        return
+    for emp in scenario.employees:
+        streak = longest_streak(days_worked(result, emp.id))
+        assert streak <= ceiling, (
+            f"{emp.name}: {streak} consecutive working days exceeds the "
+            f"'{scenario.settings.labor_regime}' ceiling of {ceiling}"
+        )
+
+
 # The full battery, in a readable order.
 HARD_CONSTRAINT_CHECKS = (
     check_exact_staffing,
@@ -471,6 +521,8 @@ HARD_CONSTRAINT_CHECKS = (
     check_min_rest_days,
     check_rookie_veteran_caps,
     check_max_shifts_per_week,
+    check_regime_offday_windows,
+    check_regime_consecutive_ceiling,
 )
 
 

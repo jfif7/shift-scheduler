@@ -44,6 +44,7 @@ export interface APIScheduleSettings {
   fairness_weight?: number
   preference_weight?: number
   optimize_for?: "balanced" | "minimal_cost" | "max_coverage"
+  labor_regime?: "none" | "standard" | "four_week_flexible"
 }
 
 export interface APIScheduleRequest {
@@ -73,6 +74,7 @@ export interface APISolverMetadata {
   objective_value: number
   constraints_satisfied: boolean
   algorithm: string
+  compliance_notes?: string[]
 }
 
 export interface APIScheduleResponse {
@@ -168,6 +170,7 @@ function convertToAPISettings(settings: ScheduleSettings): APIScheduleSettings {
     fairness_weight: 2,
     preference_weight: 100,
     optimize_for: "balanced",
+    labor_regime: settings.laborRegime ?? "none",
   }
 }
 

@@ -146,6 +146,21 @@
         "prevented": "禁止",
         "allowed": "允許"
     },
+    "labor": {
+        "title": "勞基法合規",
+        "regime": "工時制度",
+        "regimeNone": "不套用（無法定下限）",
+        "regimeStandard": "一例一休（最多連續 5 天）",
+        "regimeFourWeek": "四週變形（最多連續 12 天）",
+        "regimeDescription": {
+            "none": "除上方設定外，不強制套用任何勞基法規則。",
+            "standard": "§36 一例一休：每連續 7 天至少 2 天休假。",
+            "four_week_flexible": "§30-1 四週變形（醫療業）：每 14 天至少 2 天、每 28 天至少 8 天休假（最多連續 12 天）。"
+        },
+        "hoursNote": "工時類規則（§34 輪班間隔 11 小時；§30/§32 工時與加班）無法在本系統建模，仍須由管理者自行確保。",
+        "warnConsecutiveDays": "最多連續天數（{value}）超過此制度上限 {ceiling}，班表將收緊為 {ceiling}。",
+        "warnMaxShiftsPerWeek": "每週最多班次（{value}）寬於一例一休（≤5），班表將收緊以符合休假規定。"
+    },
     "toast": {
         "noSchedule": "無班表",
         "pleaseGenerateFirst": "請先生成班表。",
