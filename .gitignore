@@ -4,6 +4,7 @@ node_modules
 public/
 dist/
 tsconfig.tsbuildinfo
+next-env.d.ts
 __pycache__
 
 .env.development
